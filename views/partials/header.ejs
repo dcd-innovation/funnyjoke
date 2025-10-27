@@ -1,0 +1,166 @@
+<header class="header">
+  <div class="header-container header__bar header__bar--top">
+    <!-- Hamburger -->
+    <button class="hamburger" type="button" aria-label="Toggle sidebar" aria-expanded="false" aria-controls="page-shell" data-sidebar-toggle>
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+
+    <!-- Brand -->
+    <div class="logo-section">
+      <a href="/"><img class="logo" src="/images/icons/funnyjoke-logo.svg" alt="FunnyJoke Logo" /></a>
+    </div>
+
+    <!-- Primary nav -->
+    <nav class="nav nav--primary" role="navigation" aria-label="Primary" data-nav>
+      <ul class="nav-links nav-links--primary">
+        <li><a href="/shuffle" data-shuffle>🔀 <b>Shuffle</b></a></li>
+        <li><a href="/app">📱 <b>Get App</b></a></li>
+        <li><a href="/memeland">🏴‍☠️ <b>Memeland</b></a></li>
+        <li><a href="/moonit">🌕 <b>Moonit</b></a></li>
+        <li><a href="/potatoz">🥔 <b>Potatoz</b></a></li>
+        <li><a href="/nsfw">💣 <b>NSFW</b></a></li>
+      </ul>
+    </nav>
+
+    <!-- Right cluster -->
+    <div class="header-right">
+      <!-- Search -->
+      <button class="icon-btn" type="button" aria-label="Search" aria-haspopup="dialog" aria-expanded="false" aria-controls="search-popover" data-search-toggle>🔍</button>
+
+      <form id="search-popover" class="search-popover" role="search" action="/search" method="get" autocomplete="off" data-search-box>
+        <div class="search-pill">
+          <input type="text" name="q" placeholder="Search…" aria-label="Search FunnyJoke" />
+          <button class="clear-btn" type="button" aria-label="Clear" hidden>✕</button>
+        </div>
+      </form>
+
+      <% if (!user) { %>
+        <!-- Modal opener (fallback /login if JS off) -->
+        <a class="auth-link" href="/login" data-open-post>Register / Log in</a>
+
+        <!-- Avatar button (guest) -->
+        <button class="avatar-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
+          <img src="/images/icons/user-icon-match-34.png"
+               srcset="/images/icons/user-icon-match-68.png 2x, /images/icons/user-icon-match-102.png 3x"
+               alt="" width="34" height="34" />
+        </button>
+      <% } else { %>
+        <!-- Avatar button (authed) -->
+        <button class="avatar-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
+          <img src="<%= user.avatarUrl || '/images/icons/avatar-default.png' %>" alt="" />
+        </button>
+      <% } %>
+
+      <!-- Avatar dropdown -->
+      <div class="avatar-menu" role="menu" data-avatar-menu>
+        <ul>
+          <% if (!user) { %>
+            <!-- GUEST MENU -->
+            <li><a href="/register" data-open-post>Register</a></li>
+            <li><a href="/login"    data-open-post>Log in</a></li>
+
+            <li><a href="/tags">Customize with Tags</a></li>
+            <li class="menu-switch">
+              <span>Dark Mode</span>
+              <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+              </label>
+            </li>
+            <li><a href="/app">Download App</a></li>
+            <li><a href="/help">Help Center</a></li>
+            <li><a href="/report">Report Problems</a></li>
+            <li class="menu-accordion"><button data-accordion="terms">Terms & Policies ▾</button></li>
+            <li class="menu-accordion"><button data-accordion="ads">Advertise ▾</button></li>
+            <li class="menu-accordion"><button data-accordion="contact">Contact ▾</button></li>
+            <li class="menu-foot">FunnyJoke © <%= new Date().getFullYear() %></li>
+          <% } else { %>
+            <!-- AUTHED MENU -->
+            <li class="menu-greet">Hi, <strong><%= user.name || user.email || 'You' %></strong></li>
+            <li><a href="/profile">Your Profile</a></li>
+            <li><a href="/tags">Customize with Tags</a></li>
+            <li class="menu-switch">
+              <span>Dark Mode</span>
+              <label class="switch">
+                <input type="checkbox" id="darkModeToggle" <%= (typeof user.prefDark !== 'undefined' && user.prefDark) ? 'checked' : '' %>>
+                <span class="slider"></span>
+              </label>
+            </li>
+            <li><a href="/app">Download App</a></li>
+            <li><a href="/help">Help Center</a></li>
+            <li><a href="/report">Report Problems</a></li>
+            <li class="menu-accordion"><button data-accordion="terms">Terms & Policies ▾</button></li>
+            <li class="menu-accordion"><button data-accordion="ads">Advertise ▾</button></li>
+            <li class="menu-accordion"><button data-accordion="contact">Contact ▾</button></li>
+            <li class="menu-sep hr"></li>
+            <!-- POST-only logout -->
+            <li>
+              <form action="/logout" method="post" style="display:inline">
+                <button type="submit" class="menu-link-btn">Log out</button>
+              </form>
+            </li>
+            <li class="menu-foot">FunnyJoke © <%= new Date().getFullYear() %></li>
+          <% } %>
+        </ul>
+      </div>
+
+      <!-- Post button -->
+      <% if (!user) { %>
+        <!-- Guest: open auth modal -->
+        <button class="post-btn" data-open-post>✏️ Post</button>
+      <% } else { %>
+        <!-- Authed: real link (adjust route if different) -->
+        <a class="post-btn" href="/post/new">✏️ Post</a>
+      <% } %>
+    </div>
+
+    <!-- Auth/Post modal -->
+    <div class="modal" data-post-modal aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal__backdrop" data-close-post></div>
+      <div class="modal__panel" tabindex="-1">
+        <button class="modal__close" aria-label="Close" data-close-post>×</button>
+
+        <div class="modal__header">
+          <div class="app-mark" aria-hidden="true">
+            <img src="/images/icons/funnyjoke-logo.svg" alt="" width="48" height="48" />
+          </div>
+          <h2>FunnyJoke is the home of memes</h2>
+          <div class="dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+          <p class="tos">
+            By continuing, you agree to our <a href="/terms">Terms</a> and acknowledge our
+            <a href="/privacy">Privacy Policy</a>.
+          </p>
+        </div>
+
+        <div class="modal__actions">
+          <!-- Social: real navigations -->
+          <a class="btn social fb" href="/auth/facebook">
+            <span class="btn__icon"><img src="/images/icons/fb.svg" alt=""></span>
+            <span class="btn__label">Continue with Facebook</span>
+            <span aria-hidden="true"></span>
+          </a>
+          <a class="btn social google" href="/auth/google">
+            <span class="btn__icon"><img src="/images/icons/google.svg" alt=""></span>
+            <span class="btn__label">Continue with Google</span>
+            <span aria-hidden="true"></span>
+          </a>
+          <a class="btn social apple" href="/auth/apple">
+            <span class="btn__icon"><img src="/images/icons/apple.svg" alt=""></span>
+            <span class="btn__label">Continue with Apple</span>
+            <span aria-hidden="true"></span>
+          </a>
+
+          <!-- Email: open inline form in modal -->
+          <a class="btn outline" href="/register" data-auth="register">
+            <span class="btn__icon"><img src="/images/icons/email.svg" alt=""></span>
+            <span class="btn__label">Use email</span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <p class="modal__foot"></p>
+        <div id="auth-error" data-error="<%= error ? String(error) : '' %>" hidden></div>
+      </div>
+    </div>
+  </div>
+</header>

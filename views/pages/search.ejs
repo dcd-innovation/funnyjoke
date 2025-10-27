@@ -1,0 +1,40 @@
+<% /* pages/search.ejs — body only; layout.ejs wraps it inside <main class="feed"> */ %>
+
+<div class="search-page">
+  <!-- Search bar -->
+  <form class="search-page__bar" action="/search" method="get" role="search">
+    <div class="search-page__input">
+      <span aria-hidden="true">🔍</span>
+      <label for="q" class="sr-only">Search FunnyJoke</label>
+      <input id="q" type="text" name="q" value="<%= q || '' %>" placeholder="Search FunnyJoke…" />
+      <% if (q) { %>
+        <button type="button" aria-label="Clear"
+                onclick="this.form.q.value=''; this.form.q.focus();">✕</button>
+      <% } %>
+    </div>
+    <button class="search-page__submit" type="submit">Search</button>
+  </form>
+
+  <% if (q) { %>
+    <div class="search-page__meta">Showing results for “<%= q %>”</div>
+  <% } %>
+
+  <!-- Results -->
+  <section class="search-results" aria-live="polite">
+    <% (results || []).forEach(r => { %>
+      <article class="result-card">
+        <a class="result-card__media" href="<%= r.href %>">
+          <% if (r.img) { %><img src="<%= r.img %>" alt=""><% } %>
+        </a>
+        <div class="result-card__body">
+          <a class="result-card__title" href="<%= r.href %>"><%= r.title %></a>
+          <div class="result-card__meta"><%= r.meta || '' %></div>
+        </div>
+      </article>
+    <% }) %>
+  </section>
+
+  <% if (!(results && results.length)) { %>
+    <p class="search-empty">No results yet. Try a different keyword.</p>
+  <% } %>
+</div>

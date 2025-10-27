@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title><%= title || 'FunnyJoke' %></title>
+  <% if (canonical) { %><link rel="canonical" href="<%= canonical %>"><% } %>
+
+  <!-- SEO -->
+  <meta name="description" content="<%= typeof pageDescription !== 'undefined' ? pageDescription : 'Best jokes & riddles' %>">
+  <meta name="keywords" content="jokes, riddles, trivia, quotes, humor">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="<%= title || 'FunnyJoke' %>">
+  <meta property="og:description" content="<%= pageDescription || 'Best jokes & riddles' %>">
+  <meta property="og:image" content="<%= ogImage || (baseUrl + '/images/og-1200x630.png') %>">
+  <meta property="og:url" content="<%= canonical || baseUrl %>">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="<%= twitterImage || (baseUrl + '/images/icons/twitter-1200x675.png') %>">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+  <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#111111">
+  <link rel="icon" href="/images/icons/favicon.ico">
+  <meta name="theme-color" content="#111111">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Styles (global bundles) -->
+  <link rel="stylesheet" href="/css/base.css">
+  <!-- Header bundle (imports Header/* including user-menu/search/responsive) -->
+  <link rel="stylesheet" href="/css/header.css">
+  <!-- Page layout bundle (imports shell.css for 1/5–4/5 grid + sidebar off-canvas) -->
+  <link rel="stylesheet" href="/css/layout.css">
+
+  <!-- Optional per-page stylesheet -->
+  <% if (typeof pageCss !== 'undefined' && pageCss) { %>
+    <link rel="stylesheet" href="/css/<%= pageCss %>.css">
+  <% } %>
+
+  <!-- Optional shared head partial (keep it light, no duplicates) -->
+  <%- include("../partials/head.ejs", {
+      title, pageDescription, pageCss, canonical, ogImage, twitterImage
+  }) %>
+
+  <!-- Scripts -->
+  <!-- layout.ejs (inside <head> or before </body>) -->
+<script type="module" src="/scripts/main.js"></script>
+
+</head>
+
+<body>
+  <!-- Global header / top nav -->
+  <%- include("../partials/header.ejs", { user }) %>
+
+  <!-- Shell grid: sidebar + main feed
+       - JS toggles .sidebar-open here (for hamburger)
+       - Pass showSidebar:false from a route to hide the sidebar on a page
+       - Pass sidebarPartial:'../partials/your-alt-sidebar.ejs' to swap it
+  -->
+  <div id="page-shell" class="shell <%= showSidebar === false ? 'no-sidebar' : '' %>">
+    <% if (showSidebar !== false) { %>
+      <aside class="sidebar" role="complementary" aria-label="Sidebar">
+        <%- (typeof sidebarPartial !== 'undefined' && sidebarPartial)
+              ? include(sidebarPartial)
+              : include("../partials/sidebar.ejs") %>
+      </aside>
+    <% } %>
+
+    <!-- Main content area (pages should NOT include another <main>) -->
+    <main class="feed" role="main">
+      <%- body %>
+    </main>
+  </div>
+
+  <!-- Global footer outside shell (full-width) -->
+  <% if (typeof showFooter === 'undefined' || showFooter) { %>
+    <%- include("../partials/footer.ejs") %>
+  <% } %>
+
+  <!-- Optional loading spinner -->
+  <div id="loading" class="loading-spinner" hidden>Loading…</div>
+  <script>
+    window.addEventListener('load', () => {
+      const el = document.getElementById('loading');
+      if (el) el.hidden = true;
+    });
+  </script>
+
+  <!-- Back to top -->
+  <button class="to-top" type="button" aria-label="Back to top" data-to-top hidden>↑</button>
+
+</body>
+</html>

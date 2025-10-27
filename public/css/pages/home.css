@@ -1,0 +1,132 @@
+/* -------- imports (keep) -------- */
+@import url('../base.css');
+@import url('../sections/currentJokeCard.css');
+@import url('../sections/section-hero.css');
+@import url('../sections/section-search.css');
+@import url('../sections/section-top-stories.css');
+
+/* =================================
+   FEED (right column) UI
+================================= */
+
+/* Tabs row */
+.tabs{
+  display:flex; gap:24px; align-items:flex-end;
+  border-bottom:1px solid #DADDE1; padding:0 4px;
+  margin:0 0 12px;
+}
+.tab{
+  padding:12px 2px; color:#222; text-decoration:none; font-weight:700;
+  position:relative;
+}
+.tab.is-active::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px;
+  background:#111; border-radius:3px;
+}
+.dark .tabs{ border-color:#2a2a2a; }
+.dark .tab{ color:#eaeaea; }
+.dark .tab.is-active::after{ background:#fff; }
+
+/* Chips row */
+.chips{
+  display:flex; flex-wrap:wrap; gap:8px;
+  padding:12px 0 16px;
+}
+.chip{
+  padding:6px 12px; border-radius:999px; font-size:13px; text-decoration:none;
+  background:#F5F6F7; color:#222; border:1px solid #DADDE1; font-weight:600;
+}
+.chip:hover{ background:#ECEEF1; }
+.chip--small{ padding:4px 10px; font-size:12px; font-weight:600;}
+.dark .chip{ background:#1b1b1b; color:#ddd; border-color:#2a2a2a; }
+.dark .chip:hover{ background:#222; }
+.chip:focus-visible{
+  outline:2px solid #2f7fff; outline-offset:2px;
+}
+
+/* Post card */
+.post-card{
+  background:#fff; border:1px solid #e9e9e9; border-radius:14px;
+  overflow:hidden; box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+.dark .post-card{ background:#151515; border-color:#262626; }
+
+/* Header */
+.post-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 14px 8px;
+}
+.post-channel{ display:flex; align-items:center; gap:8px; color:#666; }
+.post-channel strong{ color:#222; }
+.post-channel .dot{ opacity:.6; }
+.post-chip{
+  --c:#777; width:22px; height:22px; border-radius:6px;
+  display:grid; place-items:center; color:#fff; background:var(--c);
+  font-size:12px; line-height:1;
+}
+.post-actions .icon{
+  background:none; border:0; color:#999; font-size:18px; cursor:pointer;
+}
+.post-actions .icon:hover{ color:#666; }
+.dark .post-channel{ color:#b3b3b3; }
+.dark .post-channel strong{ color:#eaeaea; }
+.dark .post-actions .icon{ color:#b1b1b1; }
+.dark .post-actions .icon:hover{ color:#ddd; }
+
+.dark .chip{
+  background:#1b1b1b; border-color:#2a2a2a; color:#EAEAEA;
+}
+.dark .chip:hover{ background:#222; }
+
+/* Title */
+.post-title{
+  margin:0 14px 10px; font-size:22px; line-height:1.25; color:#111;
+}
+.dark .post-title{ color:#fff; }
+
+/* Media */
+.post-media{ padding:0 14px 12px; }
+.post-media img,
+.post-media video{
+  width:100%; display:block; border-radius:10px;
+  background:#000;
+}
+
+/* Tags under media (optional) */
+.post-tags{ padding:8px 14px 0; display:flex; gap:8px; flex-wrap:wrap; }
+
+/* Footer actions */
+.post-foot{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:12px 14px 14px;
+  color:#8a8a8a;
+}
+.act{
+  background:none; border:0; color:inherit;
+  display:inline-flex; gap:6px; align-items:center; cursor:pointer;
+  font:inherit;
+}
+.act .ico{ font-size:16px; }
+.act-spacer{ flex:1; }
+
+/* =================================
+   (Legacy sections: keep styles if used)
+   If you still render .section-hero / .section-search,
+   these keep their full-width look inside .feed.
+================================= */
+.section-hero{
+  background-color:#f9f9f9;
+  padding:4rem 2rem;
+  text-align:center;
+}
+.section-search{
+  background:#f0f0f0;
+  padding:3rem 2rem;
+  text-align:center;
+}
+
+/* Optional: tighten spacing inside .feed on small screens */
+@media (max-width: 640px){
+  .post-title{ font-size:20px; }
+  .tabs{ gap:16px; }
+}

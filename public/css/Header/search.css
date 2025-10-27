@@ -1,0 +1,104 @@
+/* =============================
+   Search (popover with one pill)
+============================= */
+
+/* The anchor for absolute popover is .header-right { position:relative } */
+
+/* --- Popover card --- */
+.search-popover{
+  position: absolute;
+  top: 48px;              /* just below header row */
+  right: 0;
+  display: none;          /* toggled via JS with .is-open */
+  box-sizing: border-box;
+  width: 340px;
+  max-width: min(420px, 90vw);
+  padding: 12px;
+  background: #fff;       /* light by default */
+  border: 1px solid #E9E9E9;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  z-index: 1002;
+}
+.search-popover.is-open{ display:block !important; }
+
+/* ensure inner elements never overflow the card */
+.search-popover *{ box-sizing: border-box; }
+
+/* --- Single pill field --- */
+.search-pill{
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  width: 100%;
+  padding: 0 44px 0 44px;           /* room for left icon + right clear */
+  border-radius: 12px;
+  background: #F3F4F6;              /* light pill */
+  border: 1px solid #E5E7EB;
+}
+
+/* left magnifier (no asset required) */
+.search-pill::before{
+  content: "🔍";
+  position: absolute;
+  left: 14px;
+  font-size: 18px;
+  line-height: 1;
+  opacity: .75;
+  transform: translateY(1px);       /* visual centering tweak */
+}
+
+/* text input fills the pill */
+.search-pill input{
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: #111;
+  font-size: 16px;
+}
+
+/* right clear button (JS toggles [hidden]) */
+.clear-btn{
+  position: absolute;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: #9CA3AF;
+  cursor: pointer;
+}
+.clear-btn:hover{ color: #6B7280; }
+
+/* focus ring for accessibility */
+.search-pill:focus-within{
+  outline: 2px solid #2f7fff;
+  outline-offset: 2px;
+}
+
+/* --- Remove old multi-row form styles (if they exist) --- */
+.search-form,
+.search-form input[type="text"],
+.search-form input[type="submit"]{ all: unset; display: none !important; }
+
+/* --- Dark mode (when <html class="dark">) --- */
+.dark .search-popover{
+  background:#161616;
+  border-color:#262626;
+  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+}
+.dark .search-pill{
+  background:#1f1f1f;
+  border-color:#2e2e2e;
+}
+.dark .search-pill input{ color:#EAEAEA; }
+.dark .clear-btn{ color:#cfcfcf; }
+.dark .clear-btn:hover{ color:#e2e2e2; }
+
+/* --- Small screens: keep inside viewport --- */
+@media (max-width: 480px){
+  .search-popover{ right: 8px; left: 8px; width: auto; }
+}

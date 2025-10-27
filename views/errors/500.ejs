@@ -1,0 +1,6 @@
+<section id="server-error">
+  <h1>500 - Server Error</h1>
+  <p><%= message || 'An unexpected error occurred.' %></p>
+  <% if (error) { %><pre><%= error.stack %></pre><% } %>
+  <a href="/">Return to Home</a>
+</section>

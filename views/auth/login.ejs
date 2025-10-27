@@ -1,0 +1,67 @@
+<% /* views/auth/login.ejs */ %>
+
+<section class="auth auth--login">
+  <h1 class="auth__title">Log in</h1>
+  <p class="auth__lede">Welcome back! Enter your credentials to continue.</p>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="auth__alert" role="alert"><%= error %></div>
+  <% } %>
+
+  <form class="auth__form" method="POST" action="/login" novalidate>
+    <!-- Optional: preserve where to go after login -->
+    <% if (typeof returnTo !== 'undefined' && returnTo) { %>
+      <input type="hidden" name="returnTo" value="<%= returnTo %>">
+    <% } %>
+
+    <div class="field">
+      <label class="label" for="login-username">Username</label>
+      <input
+        id="login-username"
+        class="input"
+        type="text"
+        name="username"
+        inputmode="text"
+        autocomplete="username"
+        required
+      />
+    </div>
+
+    <div class="field">
+      <label class="label" for="login-password">Password</label>
+      <input
+        id="login-password"
+        class="input"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+
+    <div class="auth__actions">
+      <button class="btn btn--primary" type="submit">Log in</button>
+      <a class="auth__link" href="/register">Need an account? Register</a>
+    </div>
+  </form>
+
+  <div class="auth__divider" aria-hidden="true"><span>or</span></div>
+
+  <!-- Optional social sign-in (will 404 until you wire Passport providers) -->
+  <div class="auth__social">
+    <a class="btn btn--social btn--google" href="/auth/google">
+      <img src="/images/icons/google.svg" alt="" aria-hidden="true"> Continue with Google
+    </a>
+    <a class="btn btn--social btn--fb" href="/auth/facebook">
+      <img src="/images/icons/fb.svg" alt="" aria-hidden="true"> Continue with Facebook
+    </a>
+    <a class="btn btn--social btn--apple" href="/auth/apple">
+      <img src="/images/icons/apple.svg" alt="" aria-hidden="true"> Continue with Apple
+    </a>
+  </div>
+
+  <p class="auth__tos">
+    By continuing, you agree to our <a href="/terms">Terms</a> and acknowledge our
+    <a href="/privacy">Privacy Policy</a>.
+  </p>
+</section>

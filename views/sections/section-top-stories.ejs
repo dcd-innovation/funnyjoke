@@ -1,0 +1,12 @@
+<section class="section-top-stories">
+  <h2>Trending now</h2>
+  <ul class="top-stories-list">
+    <% (topStories || []).forEach(s => { %>
+      <li class="story">
+        <h3><%= s.title %></h3>
+        <p><%= s.content %></p>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+

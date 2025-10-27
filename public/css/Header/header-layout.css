@@ -1,0 +1,248 @@
+/*=============================
+  Header (base) – LIGHT DEFAULT
+=============================*/
+.header {
+  --header-h: 72px;                    /* used by sticky/overlay layouts elsewhere */
+  background: #fff;
+  color: #111;
+  border-bottom: 1px solid #E9E9E9;
+  padding: 10px 0;
+  font-family: 'Space Grotesk', Arial, sans-serif;
+  font-size: 0.975rem;
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+  position: relative;
+  z-index: 500;
+}
+
+.header__bar { display:flex; align-items:center; gap:16px; }
+.header__bar--top { height:56px; }
+.header__bar--sub { height:44px; border-top:1px solid #EFEFEF; }
+
+/*=============================
+  Container
+=============================*/
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 20px;
+  overflow: visible;
+}
+
+/*=============================
+  Logo
+=============================*/
+.logo-section h1 {
+  display:flex; flex-direction:column; align-items:center;
+  margin-right:10px; flex-shrink:0;
+  color:#FCA401; font-size:1.1rem; line-height:1.2; font-weight:bold;
+}
+.logo {
+  height:30px; width:auto; display:block; margin:0 auto 1px; cursor:pointer;
+  transition: transform .3s ease;
+}
+.logo:hover { transform: scale(1.55); }
+
+/*=============================
+  Right side cluster
+=============================*/
+.user-area { display:flex; align-items:center; gap:10px; }
+
+.header-right {
+  margin-left:auto; display:flex; align-items:center; gap:12px;
+  position:relative; overflow:visible; z-index:1000; /* anchors popovers */
+}
+
+/* Icon buttons (light) */
+.icon-btn {
+  -webkit-appearance:none; appearance:none;
+  background:none; border:0; color:#555;
+  font-size:18px; padding:8px; border-radius:10px; cursor:pointer;
+}
+.icon-btn:hover { background:rgba(0,0,0,.06); }
+.icon-btn:focus-visible { outline:2px solid #2f7fff; outline-offset:2px; }
+
+/* Auth link (light) */
+.auth-link { color:#333; text-decoration:none; font-weight:600; }
+.auth-link:hover { color:#111; }
+
+/* Post button */
+.post-btn {
+  background:#2f7fff; color:#fff; border:0;
+  padding:8px 16px; border-radius:999px; font-weight:700; cursor:pointer;
+}
+.post-btn:hover { filter:brightness(1.1); }
+
+/*=============================
+  Modal (Auth/Post)
+  - Light by default
+  - Dark when html.dark is present
+  (Upgraded stacking/positioning — no separate modal.css needed)
+=============================*/
+.modal { position: fixed; inset: 0; display: none; z-index: 1100; }
+.modal.open { display: block; }
+
+.modal__backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 1101;
+}
+
+/* Panel (LIGHT DEFAULT) */
+.modal__panel{
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 560px;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(88vh, 720px); /* cap height */
+  overflow: auto;               /* allow internal scroll */
+  background: #fff; color: #111;
+  border: 1px solid #E9E9E9; border-radius: 16px;
+  padding: 16px 16px 24px;
+  outline: none;
+  z-index: 1102;
+}
+
+.modal__close{
+  position:absolute; top:10px; right:12px;
+  background:none; border:0; color:#666; font-size:26px; cursor:pointer;
+  z-index: 1103;
+}
+
+/* Header area */
+.modal__header{ text-align:center; }
+.modal__header h2 { margin:16px 0 6px; font-size:24px; }
+
+/* App mark */
+.app-mark {
+  width:56px; height:56px; border-radius:14px; background:#F6F7F9;
+  display:grid; place-items:center; font-weight:800; margin:4px auto 12px;
+}
+.modal .app-mark img { display:block; }
+
+/* Dots + TOS */
+.dots{ margin:8px auto 0; text-align:center; }
+.dots span{
+  display:inline-block; width:6px; height:6px; background:#D0D0D0;
+  border-radius:50%; margin:0 3px;
+}
+.tos{ color:#444; font-size:13px; margin:12px auto 0; max-width:46ch; }
+
+/* Actions (social + email CTA) */
+.modal__actions{
+  padding:0 8px 8px; display:grid; gap:12px;
+}
+.modal__actions .btn{
+  width:100%; box-sizing:border-box; height:48px; border-radius:9999px;
+  text-decoration:none; display:grid; grid-template-columns:28px 1fr 28px;
+  align-items:center; column-gap:12px; padding:0 12px; font-weight:600;
+}
+
+/* “Already a member?” */
+.modal__foot{
+  margin:12px auto 6px; text-align:center; color:#555; font-size:14px;
+}
+.modal__foot a{ color:#111; text-decoration:underline; }
+.modal__foot a:hover{ opacity:.85; }
+
+/* Button skins (light) */
+.btn.social,
+.btn.outline{
+  background:#fff; color:#111; border:1px solid #E9E9E9;
+}
+.btn.social:hover,
+.btn.outline:hover{ background:#F7F7F7; }
+
+/* Icon + label helpers */
+.btn__icon img{ width:20px; height:20px; display:block; }
+.btn__label{ text-align:center; }
+
+/* ---- Dark theme overrides for modal ---- */
+html.dark .modal__panel{
+  background:#161616; color:#fff; border:1px solid #262626;
+}
+html.dark .modal__close{ color:#aaa; }
+html.dark .app-mark{ background:#0b0b0b; }
+html.dark .dots span{ background:#3a3a3a; }
+html.dark .tos{ color:#b8b8b8; }
+html.dark .modal__foot{ color:#cfcfcf; }
+html.dark .modal__foot a{ color:#fff; }
+html.dark .btn.social,
+html.dark .btn.outline{
+  background:#0e0e0e; color:#fff; border:1px solid #2b2b2b;
+}
+
+/* ---------- Inline email form inside modal ---------- */
+.auth-email-form { width:100%; box-sizing:border-box; display: grid; gap: 12px; }
+.auth-email-form .field { display: grid; gap: 6px; }
+.auth-email-form label { font-size: .95rem; color: #333; }
+.auth-email-form input{
+  width: 100%;
+  height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.auth-actions-row {
+  display:flex;
+  flex-wrap: wrap;           /* allow wrapping */
+  gap:8px;
+  align-items: stretch;
+}
+
+.auth-actions-row .btn {
+  flex: 1 1 180px;           /* grow, but shrink if needed */
+  min-width: 0;              /* prevent overflow from long labels */
+  width: auto;               /* let flex control width */
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .auth-actions-row { flex-direction: column; }
+  .auth-actions-row .btn { width: 100%; }
+}
+
+.btn.primary{
+  background:#2f7fff; color:#fff; border:0; border-radius:8px;
+  padding:10px 14px; cursor:pointer;
+}
+.btn.ghost{
+  background:transparent; border:1px solid #ddd; border-radius:8px;
+  padding:10px 14px; color:#333; cursor:pointer;
+}
+
+/* Tidy social buttons */
+.btn.social{
+  display:grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items:center; gap:10px;
+  height: 48px;
+}
+.btn__icon img{ width:20px; height:20px; display:block; }
+
+@media (max-width: 420px){
+  .modal__panel{ padding:14px; }
+  .btn.social{ grid-template-columns:20px 1fr 20px; }
+}
+
+/* Force center on modal footer text/link */
+.modal__foot {
+  width: 100%;
+  text-align: center !important;
+}
+.modal__foot a {
+  display: inline-block;       /* keeps the link neatly centered */
+}
+

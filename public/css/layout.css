@@ -1,0 +1,10 @@
+/* optional global sections */
+@import './shell/shell.css';
+@import './sections/section-hero.css';
+@import './sections/section-search.css';
+@import './sections/section-top-stories.css';
+@import './sections/currentJokeCard.css';
+
+/* optional partials */
+@import './partials/head.css';
+@import './partials/footer.css';

@@ -1,0 +1,14 @@
+<div class="homepage">
+  <!-- Full-width sections -->
+  <%- include("sections/section-hero") %> <!-- First row, full-width -->
+  <%- include("sections/section-search") %> <!-- Second row, full-width -->
+  <%- include("sections/section-features") %> <!-- Second row, full-width -->
+  <%- include('sections/section-top-stories', { topStories: topStories || [] }) %> <!-- Second row, full-width -->
+  <%- include("sections/section-signup") %> <!-- Second row, full-width -->
+
+
+  <!-- Two-column layout: Main content on left, Sidebar on right -->
+    <div class="section-main-content">
+      <%- include("sections/currentJokeCard") %> <!-- 2/3 width -->
+    </div>
+</div>

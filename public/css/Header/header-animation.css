@@ -1,0 +1,13 @@
+* =============================
+   Animations
+   ============================= */
+@keyframes slideDown {
+  from {
+    opacity: 0;                /* Start invisible */
+    transform: translateY(-10px); /* Start slightly above */
+  }
+  to {
+    opacity: 1;                /* End fully visible */
+    transform: translateY(0);  /* End in position */
+  }
+}

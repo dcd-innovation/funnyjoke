@@ -1,0 +1,41 @@
+{
+  "name": "funnyjoke",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FunnyJoke web app",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build:css": "postcss public/css/app.entry.css -o public/dist/app.css",
+    "build": "npm run build:css",
+    "watch:css": "postcss public/css/app.entry.css -o public/dist/app.css -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=18 <23"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.1",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.2",
+    "passport": "^0.7.0",
+    "passport-apple": "^2.0.2",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "cssnano": "^7.1.1",
+    "nodemon": "^3.1.7",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "postcss-import": "^16.1.1"
+  }
+}

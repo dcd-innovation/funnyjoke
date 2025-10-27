@@ -1,0 +1,51 @@
+/* =============================
+   Desktop Navigation Layout
+   ============================= */
+
+.nav {
+  flex-grow: 1;                   /* Allow nav to grow and fill space */
+  display: flex;                  /* Flex container for nav elements */
+  align-items: center;            /* Vertically center nav items */
+  justify-content: space-between; /* Distribute nav items */
+  flex-wrap: nowrap;              /* Prevent wrapping */
+  gap: 20px;                      /* Space between nav items */
+}
+
+.nav-links {
+  list-style: none;               /* Remove bullets from list */
+  display: flex;                  /* Arrange links in a row */
+  flex-wrap: nowrap;             /* Prevent wrapping */
+  overflow-x: auto;               /* Allow horizontal scroll if needed */
+  gap: 15px;                      /* Spacing between links */
+  margin: 0;                      /* Remove margin */
+  padding: 0;                     /* Remove padding */
+  flex-shrink: 1;                 /* Allow shrinking if space is tight */
+}
+
+/* Light default */
+.nav-links li a{
+  color:#222;                 /* darker text for contrast */
+  text-decoration:none;
+  font-weight:600;
+  transition: color .15s ease, opacity .15s ease;
+}
+.nav-links li a:hover{ color:#000; }
+.nav-links li a:focus-visible{
+  outline:2px solid #2f7fff; outline-offset:2px; border-radius:6px;
+}
+
+/* Dark */
+.dark .nav-links li a{ color:#EAEAEA; }
+.dark .nav-links li a:hover{ color:#fff; }
+
+
+/* Keep your primary group tweaks */
+.nav-links--primary{ display:flex; gap:22px; opacity:.95; }
+.nav-links--primary a:hover{ opacity:1; }
+
+
+
+.nav-links--primary {
+  display:flex; gap:22px; font-weight:600; opacity:.95;
+}
+.nav-links--primary a:hover { opacity:1; }

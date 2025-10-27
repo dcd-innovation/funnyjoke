@@ -1,0 +1,57 @@
+<% /* views/auth/register.ejs */ %>
+<section class="auth auth--register">
+  <h1 class="auth__title">Create your account</h1>
+  <p class="auth__lede">Join FunnyJoke and start posting, saving, and more.</p>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="auth__alert" role="alert"><%= error %></div>
+  <% } %>
+
+  <form class="auth__form" method="POST" action="/register" novalidate>
+    <% if (typeof returnTo !== 'undefined' && returnTo) { %>
+      <input type="hidden" name="returnTo" value="<%= returnTo %>">
+    <% } %>
+
+    <div class="field">
+      <label class="label" for="reg-name">Full name</label>
+      <input id="reg-name" class="input" type="text"
+             name="name" inputmode="text" autocomplete="name" required />
+    </div>
+
+    <div class="field">
+      <label class="label" for="reg-email">Email address</label>
+      <input id="reg-email" class="input" type="email"
+             name="email" autocomplete="email" required />
+    </div>
+
+    <div class="field">
+      <label class="label" for="reg-password">Password</label>
+      <input id="reg-password" class="input" type="password"
+             name="password" autocomplete="new-password" required minlength="8" />
+    </div>
+
+    <div class="auth__actions">
+      <button class="btn btn--primary" type="submit">Create account</button>
+      <a class="auth__link" href="/login">Already have an account? Log in</a>
+    </div>
+  </form>
+
+  <div class="auth__divider" aria-hidden="true"><span>or</span></div>
+
+  <div class="auth__social">
+    <a class="btn btn--social btn--google" href="/auth/google">
+      <img src="/images/icons/google.svg" alt="" aria-hidden="true"> Continue with Google
+    </a>
+    <a class="btn btn--social btn--fb" href="/auth/facebook">
+      <img src="/images/icons/fb.svg" alt="" aria-hidden="true"> Continue with Facebook
+    </a>
+    <a class="btn btn--social btn--apple" href="/auth/apple">
+      <img src="/images/icons/apple.svg" alt="" aria-hidden="true"> Continue with Apple
+    </a>
+  </div>
+
+  <p class="auth__tos">
+    By continuing, you agree to our <a href="/terms">Terms</a> and acknowledge our
+    <a href="/privacy">Privacy Policy</a>.
+  </p>
+</section>

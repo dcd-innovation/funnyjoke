@@ -1,0 +1,15 @@
+/* Generic responsive images (content) */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* UI icons — prevent distortion (overrides the rule above) */
+:is(.btn__icon img, .auth__social img, .avatar-menu img) {
+  max-width: none;   /* don't stretch to container width */
+  width: auto;       /* use intrinsic width */
+  height: 20px;      /* consistent icon size */
+  object-fit: contain;
+  display: block;
+}

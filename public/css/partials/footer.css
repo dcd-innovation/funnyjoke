@@ -1,0 +1,42 @@
+.social-icons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.social-icons a {
+  width: 36px;              /* button box */
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;       /* optional */
+  background: rgba(255,255,255,0.06); /* optional */
+  transition: transform .15s ease, background .15s ease;
+}
+.social-icons a:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); }
+
+.social-icons img {
+  width: 22px;              /* icon size */
+  height: 22px;
+  display: block;
+  object-fit: contain;
+}
+
+.footer-branding{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.footer-branding img{
+  width:32px;    /* control size */
+  height:32px;   /* keeps square */
+  display:block;
+  object-fit:contain;
+}
+
+.footer-branding p{
+  margin:0;
+  font-weight:600;   /* tweak as you like */
+}

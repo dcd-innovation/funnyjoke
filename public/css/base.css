@@ -1,0 +1,163 @@
+/* ==============================
+   Base / Theme Tokens
+   ============================== */
+
+/* Light (default) */
+:root{
+  /* Surfaces & text */
+  --bg: #F6F7F9;
+  --text: #111;
+
+  /* Cards / panels */
+  --card-bg: #fff;
+  --card-border: #E9E9E9;
+  --card-text: #111;
+
+  /* Header/search popovers */
+  --popover-bg: #111;
+  --popover-border: #262626;
+  --popover-text: #fff;
+
+  /* Brand / actions */
+  --brand: #2f7fff;
+  --brand-text: #fff;
+
+  /* Lines */
+  --line: #E9E9E9;
+
+  /* Focus ring */
+  --focus: #2f7fff;
+
+  /* Layout */
+  --shell-max: 1200px;
+  --gap: 20px;
+
+  color-scheme: light;
+}
+
+/* Dark mode (toggle by adding <html class="dark">) */
+.dark{
+  --bg: #0E0E0E;
+  --text: #EAEAEA;
+
+  --card-bg: #151515;
+  --card-border: #262626;
+  --card-text: #EAEAEA;
+
+  --popover-bg: #141414;
+  --popover-border: #262626;
+  --popover-text: #EAEAEA;
+
+  --line: #262626;
+
+  color-scheme: dark;
+}
+
+/* ==============================
+   Page base
+   ============================== */
+html, body{
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+               Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji",
+               "Segoe UI Emoji", "Segoe UI Symbol";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links */
+a{ color: inherit; }
+a:hover{ text-decoration: underline; }
+
+/* Images */
+img{ max-width: 100%; height: auto; display: block; }
+
+/* Buttons & inputs (minimal reset) */
+button, input, select, textarea{
+  font: inherit;
+  color: inherit;
+}
+
+/* Focus visibility */
+:where(a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])):focus-visible{
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Horizontal rule / thin lines */
+.hr, hr{
+  border: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+/* Utility container (optional) */
+.container{
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Reusable “card” surface (used by sidebar signup etc.) */
+.card{
+  background: var(--card-bg);
+  color: var(--card-text);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* Primary pill/button (e.g., sidebar Sign up) */
+.btn-primary{
+  display: inline-block;
+  background: var(--brand);
+  color: var(--brand-text);
+  border: 0;but
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+.btn-primary:hover{ filter: brightness(1.1); }
+
+/* Popover surface (header search uses these vars in its own CSS) */
+.popover{
+  background: var(--popover-bg);
+  color: var(--popover-text);
+  border: 1px solid var(--popover-border);
+  border-radius: 12px;
+}
+
+/* Small helpers */
+.hidden{ display: none !important; }
+
+/* Back-to-top button */
+.to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 1000;
+}
+.dark .to-top { background: #eaeaea; color: #111; }
+.to-top:focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+.to-top--show { opacity: 1; transform: translateY(0); }
+

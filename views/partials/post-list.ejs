@@ -1,0 +1,9 @@
+<% /* Renders a list of post cards. Expects: posts (array). */ %>
+
+<% if (Array.isArray(posts) && posts.length) { %>
+  <% posts.forEach(p => { %>
+    <%- include('./post-card.ejs', { p }) %>
+  <% }) %>
+<% } else { %>
+  <p class="feed-empty">No posts yet. Check back soon!</p>
+<% } %>

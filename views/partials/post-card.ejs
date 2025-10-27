@@ -1,0 +1,61 @@
+<article class="post-card" data-post-id="<%= p.id %>">
+  <header class="post-head">
+    <div class="post-channel">
+      <span class="post-chip" style="--c:#3aa76d;"><%= p.channelIcon || "🟢" %></span>
+      <strong class="post-channel__name"><%= p.channelName %></strong>
+      <span class="dot" aria-hidden="true">•</span>
+      <time datetime="<%= p.isoTime %>" title="<%= p.isoTime %>"><%= p.timeAgo %></time>
+    </div>
+    <div class="post-actions">
+      <button class="icon" type="button" aria-label="More options">⋯</button>
+      <button class="icon" type="button" aria-label="Hide this post">×</button>
+    </div>
+  </header>
+
+  <h3 class="post-title"><%= p.title %></h3>
+
+  <div class="post-media">
+    <% if (p.videoUrl) { %>
+      <video controls preload="metadata" <% if (p.posterUrl) { %>poster="<%= p.posterUrl %>"<% } %>>
+        <source src="<%= p.videoUrl %>" type="video/mp4" />
+        Sorry, your browser doesn’t support embedded videos.
+      </video>
+    <% } else if (p.imageUrl) { %>
+      <img
+        src="<%= p.imageUrl %>"
+        alt="<%= p.title %>"
+        loading="lazy"
+        decoding="async"
+      />
+    <% } else { %>
+      <div class="post-media__placeholder" aria-hidden="true">No media</div>
+    <% } %>
+  </div>
+
+  <% if ((p.tags || []).length) { %>
+    <div class="post-tags">
+      <% p.tags.forEach(t => { %>
+        <a class="chip chip--small" href="/t/<%= t %>"><%= t %></a>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <footer class="post-foot" aria-label="Post actions">
+    <button class="act" type="button" aria-label="Upvote">
+      <span class="ico" aria-hidden="true">⬆️</span> <%= p.up %>
+    </button>
+    <button class="act" type="button" aria-label="Downvote">
+      <span class="ico" aria-hidden="true">⬇️</span>
+    </button>
+    <a class="act" href="/post/<%= p.id %>#comments">
+      <span class="ico" aria-hidden="true">💬</span> <%= p.comments %> Comments
+    </a>
+    <button class="act" type="button" aria-label="Save">
+      <span class="ico" aria-hidden="true">🔖</span> Save
+    </button>
+    <div class="act-spacer" aria-hidden="true"></div>
+    <button class="act" type="button" aria-label="Share on WhatsApp">🟢</button>
+    <button class="act" type="button" aria-label="Share on Messenger">📨</button>
+    <button class="act" type="button" aria-label="Share">↗︎ Share</button>
+  </footer>
+</article>

@@ -1,0 +1,43 @@
+/* =============================
+   Dark Mode – class-based overrides
+   Works with either:
+   1) <html class="dark"> … OR
+   2) <header class="header header--dark">
+============================= */
+
+/* Root toggle */
+.dark .header,
+.header--dark {
+  background:#141414;
+  color:#EAEAEA;
+  border-bottom:1px solid #262626;
+}
+
+/* Light separators inside dark header */
+.dark .header__bar--sub,
+.header--dark .header__bar--sub {
+  border-top:1px solid #202020;
+}
+
+/* Buttons/links in dark header */
+.dark .icon-btn,
+.header--dark .icon-btn { color:#eaeaea; }
+.dark .icon-btn:hover,
+.header--dark .icon-btn:hover { background:rgba(255,255,255,.08); }
+
+.dark .auth-link,
+.header--dark .auth-link { color:#eaeaea; }
+.dark .auth-link:hover,
+.header--dark .auth-link:hover { color:#fff; }
+
+/* Optional: respect system dark if you haven't toggled a class */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .header {
+    background:#141414;
+    color:#EAEAEA;
+    border-bottom:1px solid #262626;
+  }
+  :root:not(.light) .icon-btn { color:#eaeaea; }
+  :root:not(.light) .icon-btn:hover { background:rgba(255,255,255,.08); }
+  :root:not(.light) .auth-link { color:#eaeaea; }
+}

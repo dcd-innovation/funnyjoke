@@ -1,0 +1,22 @@
+<% /* views/pages/home.ejs — rendered inside <main class="feed"> from layout.ejs */ %>
+
+<div class="home" data-page="home">
+  <!-- Row 1: tabs -->
+  <nav class="tabs" aria-label="Feed tabs">
+    <% (tabs || []).forEach((t, i) => { %>
+      <a class="tab <%= i === 0 ? 'is-active' : '' %>" href="#"><%= t %></a>
+    <% }) %>
+  </nav>
+
+  <!-- Row 2: chips -->
+  <div class="chips" role="list">
+    <% (chips || []).forEach(c => { %>
+      <a class="chip" role="listitem" href="/t/<%= c.replace(/\s+/g,'-') %>"><%= c %></a>
+    <% }) %>
+  </div>
+
+  <!-- Row 3+: posts (JS shuffles this block) -->
+  <section data-feed>
+    <%- include('../partials/post-list.ejs', { posts }) %>
+  </section>
+</div>
