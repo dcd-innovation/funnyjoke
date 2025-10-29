@@ -4,3 +4,7 @@
 # deps & build
 node_modules/
 public/dist/
+node_modules/
+.env
+node_modules/
+.env

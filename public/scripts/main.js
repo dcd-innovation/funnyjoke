@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAvatarMenu?.();
   initDarkMode?.();
   initSidebar?.();
-  initRefreshConfirm?.(); // confirm dialog for logo
+  initRefreshConfirm?.();
   initScrollTop?.();
 
   // Deep-link auth via ?auth=login|register and optional ?returnTo=...
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ret  = params.get('returnTo');
   if (ret) sessionStorage.setItem('auth:returnTo', ret);
 
-  if (mode) {
+  if (mode === 'login' || mode === 'register') {
     window.openAuthModal?.(mode);
     // clean URL (remove both auth and returnTo)
     params.delete('auth');
@@ -50,27 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const opener = e.target.closest('[data-open-post]');
     if (!opener) return;
 
-    // If there's already a ?returnTo=... in the URL, your existing code handles it.
-    // Otherwise, store the current location so the server can send them back here.
-    const params = new URLSearchParams(location.search);
-    if (!params.get('returnTo')) {
+    // If URL already has ?returnTo=..., keep it; otherwise, store current page.
+    const p = new URLSearchParams(location.search);
+    if (!p.get('returnTo')) {
       const here = `${location.pathname}${location.search}${location.hash}`;
       sessionStorage.setItem('auth:returnTo', here);
     }
   }, true);
-
 });
-
-// When any auth opener is clicked, remember the current page as returnTo
-document.addEventListener('click', (e) => {
-  const opener = e.target.closest('[data-open-post]');
-  if (!opener) return;
-
-  // If URL already has ?returnTo=... we keep that (you already handle this).
-  // Otherwise, store the current location so the server can send them back here.
-  const params = new URLSearchParams(location.search);
-  if (!params.get('returnTo')) {
-    const here = `${location.pathname}${location.search}${location.hash}`;
-    sessionStorage.setItem('auth:returnTo', here);
-  }
-}, true);

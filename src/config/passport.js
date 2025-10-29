@@ -61,12 +61,16 @@ export async function configurePassport({ userRepo }) {
   /* ------------------------------------------------------------------------ */
   if (config.google?.clientID && config.google?.clientSecret) {
     const { Strategy: GoogleStrategy } = await import('passport-google-oauth20');
+
+    const googleCallback = getCallbackUrl('/auth/google/callback');
+    console.info(`[passport] Google enabled. callbackURL=${googleCallback}`);
+
     passport.use(
       new GoogleStrategy(
         {
           clientID:     config.google.clientID,
           clientSecret: config.google.clientSecret,
-          callbackURL:  getCallbackUrl('/auth/google/callback'),
+          callbackURL:  googleCallback,
         },
         async (_accessToken, _refreshToken, profile, done) => {
           try {
@@ -88,12 +92,16 @@ export async function configurePassport({ userRepo }) {
   /* ------------------------------------------------------------------------ */
   if (config.facebook?.clientID && config.facebook?.clientSecret) {
     const { Strategy: FacebookStrategy } = await import('passport-facebook');
+
+    const fbCallback = getCallbackUrl('/auth/facebook/callback');
+    console.info(`[passport] Facebook enabled. callbackURL=${fbCallback}`);
+
     passport.use(
       new FacebookStrategy(
         {
           clientID:     config.facebook.clientID,
           clientSecret: config.facebook.clientSecret,
-          callbackURL:  getCallbackUrl('/auth/facebook/callback'),
+          callbackURL:  fbCallback,
           profileFields: ['id', 'displayName', 'emails', 'photos'],
         },
         async (_accessToken, _refreshToken, profile, done) => {
@@ -121,6 +129,10 @@ export async function configurePassport({ userRepo }) {
     config.apple?.privateKey
   ) {
     const { Strategy: AppleStrategy } = await import('passport-apple');
+
+    const appleCallback = getCallbackUrl('/auth/apple/callback');
+    console.info(`[passport] Apple enabled. callbackURL=${appleCallback}`);
+
     passport.use(
       new AppleStrategy(
         {
@@ -128,7 +140,7 @@ export async function configurePassport({ userRepo }) {
           teamID:      config.apple.teamID,
           keyID:       config.apple.keyID,
           privateKey:  config.apple.privateKey,
-          callbackURL: getCallbackUrl('/auth/apple/callback'),
+          callbackURL: appleCallback,
         },
         async (_accessToken, _refreshToken, _idToken, profile, done) => {
           try {
@@ -145,7 +157,7 @@ export async function configurePassport({ userRepo }) {
     );
   }
 
-  return passport;
+  return passport; // singleton instance configured
 }
 
 /**

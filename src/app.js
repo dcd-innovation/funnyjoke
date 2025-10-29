@@ -8,7 +8,7 @@ import expressLayouts from 'express-ejs-layouts';
 import { config } from './config/env.js';
 import { requestLogger } from './utils/loggers.js';
 
-// Passport
+// Passport (singleton pattern)
 import passport from 'passport';
 import { configurePassport } from './config/passport.js';
 import { createUserRepo } from './repositories/userRepo.memory.js';
@@ -21,6 +21,15 @@ import pagesRoutes from './routes/pages.routes.js';
 // Errors
 import { errorHandler, notFound as notFoundHandler } from './middleware/errorHandler.js';
 
+// ---- Redis session store (connect-redis v7/v8 + redis v4) ----
+// v8 exports { RedisStore }, v7 exports default — handle both:
+let RedisStore;
+{
+  const mod = await import('connect-redis');
+  RedisStore = mod.RedisStore || mod.default || mod;
+}
+import { createClient as createRedisClient } from 'redis';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
@@ -29,27 +38,53 @@ const app = express();
 /* ----------------------------- Core middleware ---------------------------- */
 if (config.isProd) app.set('trust proxy', 1);
 
-app.use(express.json());                         // JSON bodies
-app.use(express.urlencoded({ extended: true })); // HTML form POSTs
-app.use(requestLogger());                        // optional
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger());
 
 // Static assets
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 /* ----------------------------- Sessions + Passport ------------------------ */
+let store;
+if (process.env.REDIS_URL) {
+  const useTls = process.env.REDIS_URL.startsWith('rediss://');
+  const redisClient = createRedisClient({
+    url: process.env.REDIS_URL,
+    socket: useTls ? { tls: true, rejectUnauthorized: false } : undefined,
+  });
+
+  redisClient.on('error', (err) => {
+    console.error('[redis] error:', err?.message || err);
+  });
+
+  await redisClient.connect();
+
+  store = new RedisStore({
+    client: redisClient,
+    prefix: 'sess:',
+  });
+} else {
+  console.warn('[session] REDIS_URL not set — using MemoryStore (dev only)');
+}
+
 app.use(session({
-  secret: config.sessionSecret || 'dev-secret',
+  store,                          // undefined => MemoryStore (only ok for local dev)
+  secret: config.sessionSecret,   // REQUIRED in env
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: config.nodeEnv === 'production',
+    secure: config.isProd,        // true on Render/HTTPS
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   },
 }));
 
+// Configure passport (singleton)
 const userRepo = createUserRepo();
-await configurePassport({ passport, userRepo });
+console.log('[boot] userRepo methods:', Object.keys(userRepo));
+await configurePassport({ userRepo });
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -82,16 +117,20 @@ app.use((req, res, next) => {
   res.locals.error = req.session?.error ?? null;
   if (req.session) req.session.error = null;
 
-  // ---- Public env for templates (DO NOT expose secrets) ----
+  // Public, non-secret flags for templates
   res.locals.env = {
     GOOGLE_CLIENT_ID:   config.google?.clientID || '',
     FACEBOOK_CLIENT_ID: config.facebook?.clientID || '',
     APPLE_CLIENT_ID:    config.apple?.clientID || '',
-    hasGoogle:          Boolean(config.google?.clientID && config.google?.clientSecret),
-    hasFacebook:        Boolean(config.facebook?.clientID && config.facebook?.clientSecret),
-    hasApple:           Boolean(config.apple?.clientID && config.apple?.teamID && config.apple?.keyID && config.apple?.privateKey),
+    hasGoogle:   Boolean(config.google?.clientID && config.google?.clientSecret),
+    hasFacebook: Boolean(config.facebook?.clientID && config.facebook?.clientSecret),
+    hasApple:    Boolean(
+      config.apple?.clientID &&
+      config.apple?.teamID &&
+      config.apple?.keyID &&
+      config.apple?.privateKey
+    ),
   };
-  // ----------------------------------------------------------
 
   next();
 });
@@ -99,7 +138,7 @@ app.use((req, res, next) => {
 /* --------------------------------- Routes -------------------------------- */
 app.use('/api/jokes', jokesApiRoutes);
 app.use('/', buildAuthRoutes({ passport, userRepo })); // /login /register /logout /profile
-app.use('/', pagesRoutes);                              // SSR pages
+app.use('/', pagesRoutes);
 
 /* ---------------------------- 404 & Error handlers ------------------------ */
 app.use(notFoundHandler);
