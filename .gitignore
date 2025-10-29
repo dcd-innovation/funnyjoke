@@ -1,13 +1,28 @@
-# secrets
-.env
-
-# deps & build
-node_modules/
-public/dist/
-node_modules/
-.env
-node_modules/
-.env
-node_modules/
+# --- Secrets ---
 .env
 .env.local
+.env.*.local
+
+# --- Dependencies & builds ---
+node_modules/
+public/dist/
+
+# --- Logs & runtime files ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+logs/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# --- OS / Editor junk ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+

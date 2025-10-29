@@ -1,58 +1,94 @@
 // /public/scripts/features/avatarMenu.js
 export function initAvatarMenu() {
-  const avatarBtn  = document.querySelector('[data-avatar-toggle]');
-  const avatarMenu = document.querySelector('[data-avatar-menu]');
-  if (!avatarBtn || !avatarMenu || avatarBtn.dataset.initialized) return;
-
-  // one-time guard
-  avatarBtn.dataset.initialized = 'true';
+  const btn  = document.querySelector('[data-avatar-toggle]');
+  const menu = document.querySelector('[data-avatar-menu]');
+  if (!btn || !menu || btn.dataset.initialized === '1') return;
+  btn.dataset.initialized = '1';
 
   // a11y wiring
-  if (!avatarMenu.id) avatarMenu.id = 'avatarMenu';
-  avatarBtn.setAttribute('aria-controls', avatarMenu.id);
-  avatarBtn.setAttribute('aria-haspopup', 'menu');
-  avatarBtn.setAttribute('aria-expanded', 'false');
+  if (!menu.id) menu.id = 'avatarMenu';
+  btn.setAttribute('aria-controls', menu.id);
+  btn.setAttribute('aria-haspopup', 'menu');
+  btn.setAttribute('aria-expanded', 'false');
+
+  const focusablesSel =
+    'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
+
+  let lastFocus = null;
 
   const open = () => {
-    avatarMenu.classList.add('is-open');
-    avatarBtn.setAttribute('aria-expanded', 'true');
-    // tell other widgets to close themselves
+    lastFocus = document.activeElement;
+    menu.classList.add('is-open');
+    btn.setAttribute('aria-expanded', 'true');
     document.dispatchEvent(new CustomEvent('fj:popover-open', { detail: 'avatar' }));
+    // focus first item
+    menu.querySelector(focusablesSel)?.focus();
+    bindGlobals();
   };
 
   const close = () => {
-    avatarMenu.classList.remove('is-open');
-    avatarBtn.setAttribute('aria-expanded', 'false');
+    if (!menu.classList.contains('is-open')) return;
+    menu.classList.remove('is-open');
+    btn.setAttribute('aria-expanded', 'false');
+    unbindGlobals();
+    // return focus for a11y
+    (lastFocus instanceof HTMLElement ? lastFocus : btn)?.focus({ preventScroll: true });
   };
 
   const toggle = (e) => {
     e.stopPropagation();
-    (avatarMenu.classList.contains('is-open') ? close : open)();
+    menu.classList.contains('is-open') ? close() : open();
   };
 
-  // handlers
-  avatarBtn.addEventListener('click', toggle);
-  avatarMenu.addEventListener('click', (e) => e.stopPropagation());
+  // Clicks
+  btn.addEventListener('click', toggle);
+  // Inside menu: don’t bubble to document
+  menu.addEventListener('click', (e) => {
+    // close when an actionable item is clicked
+    if (e.target.closest('a, button, [role="menuitem"]')) close();
+    e.stopPropagation();
+  });
 
+  // Global handlers
   const onDocClick = (e) => {
-    if (!avatarMenu.contains(e.target) && !avatarBtn.contains(e.target)) close();
+    if (!menu.contains(e.target) && !btn.contains(e.target)) close();
   };
-  document.addEventListener('click', onDocClick);
-
-  const onKeyDown = (e) => { if (e.key === 'Escape') close(); };
-  document.addEventListener('keydown', onKeyDown);
-
-  // close if another popover opens
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
+    if (e.key === 'Tab' && menu.classList.contains('is-open')) {
+      const items = Array.from(menu.querySelectorAll(focusablesSel));
+      if (!items.length) return;
+      const i = items.indexOf(document.activeElement);
+      if (e.shiftKey) {
+        if (i <= 0) { e.preventDefault(); items[items.length - 1].focus(); }
+      } else {
+        if (i === items.length - 1) { e.preventDefault(); items[0].focus(); }
+      }
+    }
+  };
   const onPopoverOpen = (e) => { if (e.detail !== 'avatar') close(); };
-  document.addEventListener('fj:popover-open', onPopoverOpen);
+  const onResize = () => close();
 
-  // optional: expose a cleanup for hot-reload or teardown
-  return () => {
-    document.removeEventListener('click', onDocClick);
-    document.removeEventListener('keydown', onKeyDown);
+  function bindGlobals() {
+    document.addEventListener('click', onDocClick, true);
+    document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('fj:popover-open', onPopoverOpen);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+  }
+  function unbindGlobals() {
+    document.removeEventListener('click', onDocClick, true);
+    document.removeEventListener('keydown', onKeyDown, true);
     document.removeEventListener('fj:popover-open', onPopoverOpen);
-    avatarBtn.removeEventListener('click', toggle);
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('orientationchange', onResize);
+  }
+
+  // Optional cleanup for HMR/hot-reload
+  return () => {
+    unbindGlobals();
+    btn.removeEventListener('click', toggle);
     close();
-    delete avatarBtn.dataset.initialized;
+    delete btn.dataset.initialized;
   };
 }

@@ -2,13 +2,12 @@
    User Menu (container)
 ============================= */
 .user-menu{
-  position: relative;          /* anchor for dropdowns */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 6px;
-  color: inherit;              /* don't force white in light mode */
-  cursor: default;
+  color: inherit;
 }
 
 /* Optional: small button inside forms (legacy) */
@@ -28,34 +27,57 @@
 .user-name{ font-weight: 500; }
 
 /* =============================
-   Avatar button
+   Avatar button + label
 ============================= */
 .avatar-btn{
-  width: 34px; height: 34px;
-  border-radius: 50%;
+  height: 34px;
+  border-radius: 999px;             /* pill so text fits */
   overflow: hidden;
-  padding: 0; border: 0;
-  background: transparent;     /* was #222 */
+  padding: 0 8px;                    /* room for name/chevron */
+  border: 0;
+  background: transparent;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   cursor: pointer;
+  line-height: 1;
 }
-.avatar-btn img{
-  width: 100%; height: 100%;
+.avatar-btn:focus-visible{
+  outline: 2px solid #2f7fff;
+  outline-offset: 2px;
+}
+.avatar-btn .avatar-img{
+  width: 34px; height: 34px;
+  border-radius: 50%;
   object-fit: cover; display: block;
+}
+.avatar-btn .avatar-name{
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.avatar-btn .chev{ opacity: .7; }
+
+/* Hide name on narrow screens */
+@media (max-width: 640px){
+  .avatar-btn .avatar-name{ display: none; }
+}
+
+/* Expanded state hint (optional) */
+.avatar-btn[aria-expanded="true"] .chev{
+  transform: rotate(180deg);
+  transition: transform .15s ease;
 }
 
 /* =============================
    Avatar dropdown (profile menu)
-   - Light by default
 ============================= */
 .avatar-menu{
-  display: none;               /* toggled by JS with .is-open */
+  display: none;                     /* toggled via .is-open */
   position: absolute;
   top: 48px; right: 0;
   width: 300px;
-  background: #fff;            /* LIGHT */
+  background: #fff;
   color: #111;
   border: 1px solid #E9E9E9;
   border-radius: 14px;
@@ -69,23 +91,23 @@
 .avatar-menu li{ padding: 10px 12px; }
 
 .avatar-menu a{
-  color: #111;
+  color: inherit;
   text-decoration: none;
   display: block;
-  padding: 6px 4px;            /* bigger hit target */
+  padding: 6px 4px;
   border-radius: 8px;
 }
-.avatar-menu a:hover{
-  background: #F3F4F6;
-  text-decoration: none;
-}
+.avatar-menu a:hover{ background: #F3F4F6; }
 
+/* Switch row */
 .menu-switch{
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
 }
+
+/* Disclosure rows */
 .menu-accordion button{
   width: 100%;
   text-align: left;
@@ -98,26 +120,30 @@
   cursor: pointer;
 }
 .menu-accordion button:hover{ background:#F3F4F6; }
+
+.menu-sep.hr{
+  padding: 0; height: 1px; margin: 6px 0;
+  background: #eee; border-radius: 1px;
+}
 .menu-foot{ color: #6B7280; font-size: 12px; }
 
 /* =============================
-   Toggle switch (scoped to dropdown)
+   Toggle switch (scoped)
 ============================= */
-.avatar-menu.is-open { display:block; }
 .avatar-menu .switch{
   position: relative; display: inline-block; width: 44px; height: 24px;
 }
 .avatar-menu .switch input{ display: none; }
 .avatar-menu .slider{
   position: absolute; inset: 0;
-  background: #E5E7EB;         /* light track */
+  background: #E5E7EB;
   border-radius: 999px; transition: all .2s;
 }
 .avatar-menu .slider:before{
   content: "";
   position: absolute; left: 3px; top: 3px;
   width: 18px; height: 18px;
-  background: #fff;             /* light knob */
+  background: #fff;
   border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.15);
   transition: all .2s;
 }
@@ -125,23 +151,21 @@
 .avatar-menu .switch input:checked + .slider:before{ transform: translateX(20px); }
 
 /* =============================
-   Dark mode overrides
+   Dark mode
 ============================= */
 .dark .avatar-menu{
   background: #141414; color: #EAEAEA;
   border: 1px solid #262626;
   box-shadow: 0 10px 28px rgba(0,0,0,.45);
 }
-.dark .avatar-menu a{ color: #EAEAEA; }
 .dark .avatar-menu a:hover{ background:#1c1c1c; }
 .dark .menu-accordion button{ color:#cfcfcf; }
 .dark .menu-foot{ color:#9aa0a6; }
-
 .dark .avatar-menu .slider{ background:#333; }
 .dark .avatar-menu .slider:before{ background:#eaeaea; }
 
 /* =============================
-   (Optional) Legacy guest hover menu
+   Legacy guest hover menu (optional)
 ============================= */
 .guest-wrapper{ position: relative; }
 .guest-wrapper:hover .dropdown-menu{
@@ -163,34 +187,15 @@
 }
 .dropdown-menu li a:hover{ color: #f1702f; }
 
-/* --- Logout button styled like a link inside avatar menu --- */
-.avatar-menu form {
-  margin: 0;                  /* kill default form margins */
+/* =============================
+   Logout button styled as link
+============================= */
+.avatar-menu form{ margin: 0; }
+.menu-link-btn{
+  display: block; width: 100%;
+  background: none; border: 0; padding: 6px 4px; margin: 0;
+  font: inherit; color: inherit; text-align: left;
+  border-radius: 8px; cursor: pointer;
 }
-
-.menu-link-btn {
-  /* visually identical to .avatar-menu a */
-  display: block;
-  width: 100%;
-  background: none;
-  border: 0;
-  padding: 6px 4px;           /* same hit target as links */
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Hover & focus to match menu links */
-.menu-link-btn:hover {
-  background: #F3F4F6;
-  text-decoration: none;
-}
-
-/* Dark mode hover to match .avatar-menu a:hover override */
-.dark .menu-link-btn:hover {
-  background: #1c1c1c;
-}
-
+.menu-link-btn:hover{ background:#F3F4F6; }
+.dark .menu-link-btn:hover{ background:#1c1c1c; }

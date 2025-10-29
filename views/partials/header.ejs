@@ -39,20 +39,30 @@
         <a class="auth-link" href="/login" data-open-post>Register / Log in</a>
 
         <!-- Avatar button (guest) -->
-        <button class="avatar-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
-          <img src="/images/icons/user-icon-match-34.png"
-               srcset="/images/icons/user-icon-match-68.png 2x, /images/icons/user-icon-match-102.png 3x"
-               alt="" width="34" height="34" />
+        <button class="avatar-btn" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
+          <img
+            src="/images/icons/user-icon-match-34.png"
+            srcset="/images/icons/user-icon-match-68.png 2x, /images/icons/user-icon-match-102.png 3x"
+            alt="Account"
+            width="34" height="34"
+          />
         </button>
       <% } else { %>
         <!-- Avatar button (authed) -->
-        <button class="avatar-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
-          <img src="<%= user.avatarUrl || '/images/icons/avatar-default.png' %>" alt="" />
+        <button class="avatar-btn" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
+          <img
+            src="<%= user.avatarUrl || '/images/icons/avatar-default.png' %>"
+            alt="Account"
+            class="avatar-img"
+            referrerpolicy="no-referrer"
+          />
+          <span class="avatar-name"><%= user.name || user.email || 'You' %></span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5 5-5z"/></svg>
         </button>
       <% } %>
 
       <!-- Avatar dropdown -->
-      <div class="avatar-menu" role="menu" data-avatar-menu>
+      <div class="avatar-menu" id="avatarMenu" role="menu" aria-labelledby="avatarBtn" data-avatar-menu>
         <ul>
           <% if (!user) { %>
             <!-- GUEST MENU -->
