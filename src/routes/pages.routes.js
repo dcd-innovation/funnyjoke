@@ -53,4 +53,13 @@ router.get('/post/new', ensureAuthed, (req, res) => {
 /* Mixed endpoint: JSON / partial HTML / full page */
 router.get('/shuffle', asyncHandler(pages.shuffle));
 
+
+/* Privacy Policy Pages*/
+router.get('/privacy', (req, res) => {
+  res.locals.pageDescription = 'FunnyJoke Privacy Policy';
+  res.locals.pageTitle = 'Privacy Policy';
+  res.render('pages/privacy');
+});
+
+
 export default router;
