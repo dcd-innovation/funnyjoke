@@ -8,7 +8,7 @@ import expressLayouts from 'express-ejs-layouts';
 import { config } from './config/env.js';
 import { requestLogger } from './utils/loggers.js';
 
-// Passport (singleton pattern)
+// Passport (singleton)
 import passport from 'passport';
 import { configurePassport } from './config/passport.js';
 import { createUserRepo } from './repositories/userRepo.memory.js';
@@ -17,12 +17,12 @@ import { createUserRepo } from './repositories/userRepo.memory.js';
 import buildAuthRoutes from './routes/auth.routes.js';
 import jokesApiRoutes from './routes/api/jokes.routes.js';
 import pagesRoutes from './routes/pages.routes.js';
+import { createFacebookRouter } from './routes/facebook.routes.js';
 
 // Errors
 import { errorHandler, notFound as notFoundHandler } from './middleware/errorHandler.js';
 
 // ---- Redis session store (connect-redis v7/v8 + redis v4) ----
-// v8 exports { RedisStore }, v7 exports default — handle both:
 let RedisStore;
 {
   const mod = await import('connect-redis');
@@ -38,12 +38,21 @@ const app = express();
 /* ----------------------------- Core middleware ---------------------------- */
 if (config.isProd) app.set('trust proxy', 1);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(requestLogger());
 
-// Static assets
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Static assets (prod: cache aggressively; dev: minimal)
+app.use(
+  express.static(path.join(__dirname, '..', 'public'), {
+    etag: true,
+    lastModified: true,
+    maxAge: config.isProd ? '7d' : 0,
+    setHeaders(res) {
+      if (!config.isProd) res.setHeader('Cache-Control', 'no-store');
+    },
+  })
+);
 
 /* ----------------------------- Sessions + Passport ------------------------ */
 let store;
@@ -69,15 +78,15 @@ if (process.env.REDIS_URL) {
 }
 
 app.use(session({
-  store,                          // undefined => MemoryStore (only ok for local dev)
-  secret: config.sessionSecret,   // REQUIRED in env
+  store,                        // undefined => MemoryStore (only OK for local dev)
+  secret: config.sessionSecret, // REQUIRED
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: config.isProd,        // true on Render/HTTPS
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    secure: config.isProd,            // true on Render/HTTPS
+    maxAge: 1000 * 60 * 60 * 24 * 7,  // 7 days
   },
 }));
 
@@ -93,7 +102,7 @@ app.use(expressLayouts);
 app.set('views', path.join(__dirname, '..', 'views'));
 app.set('view engine', 'ejs');
 app.set('layout', 'layouts/layout');
-app.set('view cache', false);
+app.set('view cache', config.isProd);
 
 /* ----------------------------- Locals / defaults -------------------------- */
 app.use((req, res, next) => {
@@ -135,10 +144,18 @@ app.use((req, res, next) => {
   next();
 });
 
+/* --------------------------------- Health --------------------------------- */
+// Simple healthcheck for uptime checks & FB/Google verifications if needed
+app.get('/healthz', (_req, res) => res.status(200).json({ ok: true }));
+
 /* --------------------------------- Routes -------------------------------- */
 app.use('/api/jokes', jokesApiRoutes);
 app.use('/', buildAuthRoutes({ passport, userRepo })); // /login /register /logout /profile
 app.use('/', pagesRoutes);
+
+// facebook
+const fbRouter = createFacebookRouter({ userRepo });
+app.use('/facebook', fbRouter);   // serves /facebook/data-deletion and /facebook/deletion-status
 
 /* ---------------------------- 404 & Error handlers ------------------------ */
 app.use(notFoundHandler);
