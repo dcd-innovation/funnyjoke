@@ -21,6 +21,7 @@ function buildPosts(jokes, count = 12) {
   }));
 }
 function shuffleArray(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
 const jokesRepo = {
   async all(){ return JOKES_SEED; },
   async findById(id){ return JOKES_SEED.find(j => j.id === Number(id)) || null; },
@@ -31,17 +32,27 @@ const jokesRepo = {
 const pages = createPagesController({ jokesRepo, buildPosts, shuffleArray });
 const router = Router();
 
-/* Public pages */
+/* ------------------------------- Public pages ------------------------------ */
 router.get('/',        asyncHandler(pages.home));
 router.get('/about',   asyncHandler(pages.about));
 router.get('/contact', asyncHandler(pages.contact));
-router.get('/search', asyncHandler(pages.search));
-router.get('/privacy',  (_req, res) => res.render('pages/privacy',  { title: 'Privacy Policy' }));
-router.get('/data-deletion', (_req, res) => res.render('pages/data-deletion', { title: 'Data Deletion' }));
+router.get('/search',  asyncHandler(pages.search));
 
+router.get('/privacy', (req, res) => {
+  res.locals.pageTitle = 'Privacy Policy';
+  res.locals.pageDescription = 'FunnyJoke Privacy Policy';
+  res.status(200).render('pages/privacy');
+});
 
-/* Auth-gated pages */
-router.get('/profile',  ensureAuthed, asyncHandler(pages.profile));
+router.get('/data-deletion', (req, res) => {
+  res.locals.pageTitle = 'Data Deletion';
+  res.locals.pageDescription = 'How to request deletion of your data on FunnyJoke.';
+  // Important for FB crawler: return 200 OK with visible instructions.
+  res.status(200).render('pages/data-deletion');
+});
+
+/* ------------------------------ Auth-gated pages --------------------------- */
+router.get('/profile', ensureAuthed, asyncHandler(pages.profile));
 router.get('/post/new', ensureAuthed, (req, res) => {
   res.render('pages/post-new', {
     title: 'Create a Post',
@@ -50,16 +61,7 @@ router.get('/post/new', ensureAuthed, (req, res) => {
   });
 });
 
-/* Mixed endpoint: JSON / partial HTML / full page */
+/* ------------------- Mixed endpoint: JSON / partial / full page ------------ */
 router.get('/shuffle', asyncHandler(pages.shuffle));
-
-
-/* Privacy Policy Pages*/
-router.get('/privacy', (req, res) => {
-  res.locals.pageDescription = 'FunnyJoke Privacy Policy';
-  res.locals.pageTitle = 'Privacy Policy';
-  res.render('pages/privacy');
-});
-
 
 export default router;
