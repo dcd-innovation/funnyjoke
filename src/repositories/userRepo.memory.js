@@ -2,6 +2,7 @@
 export function createUserRepo({ seed = [] } = {}) {
   const norm = (s) => String(s ?? '').trim().toLowerCase();
 
+  // In-memory array of users
   const _users = seed.map((u) => {
     const raw = norm(u.email ?? u.username);
     const nid = Number(u.id);
@@ -73,9 +74,8 @@ export function createUserRepo({ seed = [] } = {}) {
       return clone(existing);
     }
 
-    // If no email (some providers/flows), allow account keyed by provider id
+    // If no email, try to find by provider id to avoid dupes
     if (!rawEmail) {
-      // Try to find by provider id to avoid dupes
       const byProvider =
         (provider === 'google' && _users.find((u) => u.googleId === providerId)) ||
         (provider === 'facebook' && _users.find((u) => u.facebookId === providerId)) ||
@@ -130,6 +130,29 @@ export function createUserRepo({ seed = [] } = {}) {
     return createSocial({ email, name, avatarUrl: null, provider: 'apple', providerId });
   };
 
+  /* ------------------------------ Deletions ------------------------------ */
+  // Delete by generic provider+id (returns true if any record was removed)
+  const deleteByProviderId = async (provider, providerId) => {
+    if (!provider || !providerId) return false;
+    const key =
+      provider === 'google'   ? 'googleId'   :
+      provider === 'facebook' ? 'facebookId' :
+      provider === 'apple'    ? 'appleId'    : null;
+    if (!key) return false;
+
+    let deleted = false;
+    for (let i = _users.length - 1; i >= 0; i--) {
+      if (_users[i]?.[key] === providerId) {
+        _users.splice(i, 1);
+        deleted = true;
+      }
+    }
+    return deleted;
+  };
+
+  // Convenience wrapper for Facebook
+  const deleteByFacebookId = async (fbId) => deleteByProviderId('facebook', fbId);
+
   /* ------------------------------- Debugging ----------------------------- */
   const _debugAll = () =>
     _users.map(({ passwordHash, ...rest }) => ({ ...rest, passwordHash: '***' }));
@@ -142,6 +165,8 @@ export function createUserRepo({ seed = [] } = {}) {
     findOrCreateFromGoogle,
     findOrCreateFromFacebook,
     findOrCreateFromApple,
+    deleteByProviderId,
+    deleteByFacebookId,
     _debugAll,
   };
 }
