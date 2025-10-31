@@ -199,3 +199,33 @@
 }
 .menu-link-btn:hover{ background:#F3F4F6; }
 .dark .menu-link-btn:hover{ background:#1c1c1c; }
+
+/* Labeled variant: button grows to fit text, only the IMG stays 34x34 */
+.avatar-btn--label{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  width: auto; height: auto;   /* override fixed 34x34 from base */
+  background: transparent;
+}
+
+.avatar-btn--label .avatar-img{
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 34px;
+}
+
+.avatar-name{
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.avatar-btn--label .chev{ opacity: .6; }
+
+.avatar-btn--label:hover .chev{ opacity: 1; }
