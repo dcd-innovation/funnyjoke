@@ -4,50 +4,104 @@ export function createUserRepo({ seed = [] } = {}) {
 
   // ============================
   // Robust avatar picker (FINAL)
-  // - Facebook: always use Graph URL with explicit size
-  // - Google: keep Google's size param (=s96), DO NOT strip query
+  // - Facebook: Graph URL with explicit size (stable, no lookaside)
+  // - Google: keep size query (=s96); do NOT strip query params
   // ============================
-  const pickAvatarFromProfile = (provider, profile) => {               // NEW / FINAL
+  const pickAvatarFromProfile = (provider, profile) => {
     if (!profile) return null;
 
     let url = profile?.photos?.[0]?.value || null;
 
     if (provider === 'google') {
-      // Fallback if photos[] is missing
+      // Fallback if photos[] missing
       url = url || profile?._json?.picture || null;
-      // Normalize size (keep query string)
+      // Normalize to s=96; if none, append it
       if (url && url.includes('=s')) {
-        url = url.replace(/=s\d+/, '=s96');                             // CHANGED
+        url = url.replace(/=s\d+/, '=s96');
       } else if (url && url.includes('googleusercontent')) {
-        // Some URLs omit "=sNN" — append a reasonable default
         const sep = url.includes('?') ? '&' : '?';
-        url = `${url}${sep}s=96`;                                       // CHANGED
+        url = `${url}${sep}s=96`;
       }
-      // IMPORTANT: do NOT split('?')[0]; keep params for sizing            // CHANGED
+      // IMPORTANT: keep query string (don’t split '?')
     }
 
     if (provider === 'facebook') {
       const fbId = String(profile?.id || '').trim();
       if (fbId) {
-        // Use Graph with explicit size; redirect=1 is default but fine
-        url = `https://graph.facebook.com/${fbId}/picture?width=128&height=128&redirect=1`; // CHANGED
+        url = `https://graph.facebook.com/${fbId}/picture?width=128&height=128&redirect=1`;
       }
     }
 
     return url || null;
   };
 
-  // …(unchanged seed, nextId, clone, finders, etc.)
+  /* ----------------------------- Storage & helpers ----------------------------- */
+  const _users = seed.map((u) => {
+    const raw = norm(u.email ?? u.username);
+    const nid = Number(u.id);
+    return {
+      ...u,
+      id: Number.isFinite(nid) ? nid : undefined,
+      email: raw || null,
+      username: raw || null,
+      name: u.name ?? (raw ? raw.split('@')[0] : null),
+      avatarUrl: u.avatarUrl ?? null,
+      googleId: u.googleId ?? null,
+      facebookId: u.facebookId ?? null,
+      appleId: u.appleId ?? null,
+      createdAt: u.createdAt ?? new Date().toISOString(),
+      passwordHash: u.passwordHash, // may be undefined for social users
+    };
+  });
+
+  let nextId =
+    _users.reduce((m, u) => (Number.isFinite(u?.id) ? Math.max(m, u.id) : m), 0) + 1;
+
+  const clone = (obj) => (obj ? { ...obj } : null);
+
+  /* --------------------------------- Lookups ---------------------------------- */
+  const findById = async (id) =>
+    clone(_users.find((u) => String(u.id) === String(id)) || null);
+
+  const findByEmail = async (email) => {
+    const e = norm(email);
+    return clone(_users.find((x) => norm(x.email) === e) || null);
+  };
+
+  const findByUsername = async (username) => findByEmail(username);
+
+  /* --------------------------------- Creates ---------------------------------- */
+  const create = async ({ email, username, name, passwordHash, avatarUrl = null }) => {
+    const raw = norm(email ?? username);
+    if (!raw || !passwordHash) throw new Error('email & passwordHash required');
+    if (await findByEmail(raw)) throw new Error('Email already registered');
+
+    const user = {
+      id: nextId++,
+      email: raw,
+      username: raw,
+      name: (name && String(name).trim()) || raw.split('@')[0],
+      passwordHash,
+      avatarUrl,
+      googleId: null,
+      facebookId: null,
+      appleId: null,
+      createdAt: new Date().toISOString(),
+    };
+    _users.push(user);
+    return clone(user);
+  };
 
   // Create/update a social user (passwordless)
   const createSocial = async ({ email, name, avatarUrl, provider, providerId }) => {
     const rawEmail = norm(email) || null;
 
-    // Upsert by email
+    // Upsert by email (preferred)
     let existing = rawEmail ? _users.find((u) => norm(u.email) === rawEmail) : null;
     if (existing) {
       if (!existing.name && name) existing.name = name;
-      if (avatarUrl) existing.avatarUrl = avatarUrl;                    // keep avatar fresh
+      // Refresh avatar each login if provider sends one
+      if (avatarUrl) existing.avatarUrl = avatarUrl;
       if (provider === 'google')   existing.googleId   = providerId;
       if (provider === 'facebook') existing.facebookId = providerId;
       if (provider === 'apple')    existing.appleId    = providerId;
@@ -62,11 +116,12 @@ export function createUserRepo({ seed = [] } = {}) {
         (provider === 'apple'    && _users.find((u) => u.appleId    === providerId)) ||
         null;
       if (byProvider) {
-        if (avatarUrl) byProvider.avatarUrl = avatarUrl;                // refresh avatar
+        if (avatarUrl) byProvider.avatarUrl = avatarUrl; // refresh avatar
         return clone(byProvider);
       }
     }
 
+    // Create new
     const user = {
       id: nextId++,
       email: rawEmail,
@@ -83,11 +138,11 @@ export function createUserRepo({ seed = [] } = {}) {
     return clone(user);
   };
 
-  /* ---- Social upserts call the picker ---- */
+  /* ---------------------------- Social upserts ---------------------------- */
   const findOrCreateFromGoogle = async (profile) => {
     const email = profile?.emails?.[0]?.value || null;
     const name  = profile?.displayName || null;
-    const avatarUrl = pickAvatarFromProfile('google', profile);         // FINAL
+    const avatarUrl = pickAvatarFromProfile('google', profile);
     const providerId = String(profile?.id || '');
     if (!providerId) throw new Error('Google profile missing id');
     return createSocial({ email, name, avatarUrl, provider: 'google', providerId });
@@ -96,11 +151,59 @@ export function createUserRepo({ seed = [] } = {}) {
   const findOrCreateFromFacebook = async (profile) => {
     const email = profile?.emails?.[0]?.value || null;
     const name  = profile?.displayName || null;
-    const avatarUrl = pickAvatarFromProfile('facebook', profile);       // FINAL
+    const avatarUrl = pickAvatarFromProfile('facebook', profile);
     const providerId = String(profile?.id || '');
     if (!providerId) throw new Error('Facebook profile missing id');
     return createSocial({ email, name, avatarUrl, provider: 'facebook', providerId });
   };
 
-  // …(deletions, _debugAll, exports unchanged)
+  const findOrCreateFromApple = async (profile) => {
+    const email = profile?.email || profile?._json?.email || null;
+    const name =
+      profile?.name?.fullName ||
+      [profile?.name?.firstName, profile?.name?.lastName].filter(Boolean).join(' ') ||
+      null;
+    const providerId = String(profile?.id || '');
+    if (!providerId) throw new Error('Apple profile missing id');
+    return createSocial({ email, name, avatarUrl: null, provider: 'apple', providerId });
+  };
+
+  /* -------------------------------- Deletions ----------------------------- */
+  const deleteByProviderId = async (provider, providerId) => {
+    if (!provider || !providerId) return false;
+    const key =
+      provider === 'google'   ? 'googleId'   :
+      provider === 'facebook' ? 'facebookId' :
+      provider === 'apple'    ? 'appleId'    : null;
+    if (!key) return false;
+
+    let deleted = false;
+    for (let i = _users.length - 1; i >= 0; i--) {
+      if (_users[i]?.[key] === providerId) {
+        _users.splice(i, 1);
+        deleted = true;
+      }
+    }
+    return deleted;
+  };
+
+  const deleteByFacebookId = async (fbId) => deleteByProviderId('facebook', fbId);
+
+  /* -------------------------------- Debugging ----------------------------- */
+  const _debugAll = () =>
+    _users.map(({ passwordHash, ...rest }) => ({ ...rest, passwordHash: '***' }));
+
+  /* --------------------------------- Export -------------------------------- */
+  return {
+    findById,
+    findByEmail,
+    findByUsername,
+    create,
+    findOrCreateFromGoogle,
+    findOrCreateFromFacebook,
+    findOrCreateFromApple,
+    deleteByProviderId,
+    deleteByFacebookId,
+    _debugAll,
+  };
 }
