@@ -50,11 +50,11 @@
       <% } else { %>
         <!-- Avatar button (authed) -->
         <button class="avatar-btn avatar-btn--label" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
-          <img
-            src="<%= user.avatarUrl || '/images/icons/avatar-default.png' %>"
+          <img src="<%= user.avatarUrl || '/images/icons/avatar-default.png' %>"
             alt="Account"
             class="avatar-img"
             referrerpolicy="no-referrer"
+            width="34" height="34"
           />
           <span class="avatar-name"><%= user.name || user.email || 'You' %></span>
           <svg class="chev" width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5 5-5z"/></svg>

@@ -67,7 +67,8 @@ export function createUserRepo({ seed = [] } = {}) {
     let existing = rawEmail ? _users.find((u) => norm(u.email) === rawEmail) : null;
     if (existing) {
       if (!existing.name && name) existing.name = name;
-      if (!existing.avatarUrl && avatarUrl) existing.avatarUrl = avatarUrl;
+      // refresh avatar every login if provider sends one
+      if (avatarUrl) existing.avatarUrl = avatarUrl;
       if (provider === 'google') existing.googleId = providerId;
       if (provider === 'facebook') existing.facebookId = providerId;
       if (provider === 'apple') existing.appleId = providerId;
@@ -81,7 +82,11 @@ export function createUserRepo({ seed = [] } = {}) {
         (provider === 'facebook' && _users.find((u) => u.facebookId === providerId)) ||
         (provider === 'apple' && _users.find((u) => u.appleId === providerId)) ||
         null;
-      if (byProvider) return clone(byProvider);
+      if (byProvider) {
+        // also refresh avatar if present
+        if (avatarUrl) byProvider.avatarUrl = avatarUrl;
+        return clone(byProvider);
+      }
     }
 
     const user = {
@@ -104,7 +109,8 @@ export function createUserRepo({ seed = [] } = {}) {
   const findOrCreateFromGoogle = async (profile) => {
     const email = profile?.emails?.[0]?.value || null;
     const name = profile?.displayName || null;
-    const avatarUrl = profile?.photos?.[0]?.value?.split('?')[0] || null;
+    // keep full URL; don't strip ?params
+    const avatarUrl = profile?.photos?.[0]?.value || null;
     const providerId = String(profile?.id || '');
     if (!providerId) throw new Error('Google profile missing id');
     return createSocial({ email, name, avatarUrl, provider: 'google', providerId });
@@ -113,7 +119,8 @@ export function createUserRepo({ seed = [] } = {}) {
   const findOrCreateFromFacebook = async (profile) => {
     const email = profile?.emails?.[0]?.value || null;
     const name = profile?.displayName || null;
-    const avatarUrl = profile?.photos?.[0]?.value?.split('?')[0] || null;
+    // keep full URL; don't strip ?params
+    const avatarUrl = profile?.photos?.[0]?.value || null;
     const providerId = String(profile?.id || '');
     if (!providerId) throw new Error('Facebook profile missing id');
     return createSocial({ email, name, avatarUrl, provider: 'facebook', providerId });
@@ -131,7 +138,6 @@ export function createUserRepo({ seed = [] } = {}) {
   };
 
   /* ------------------------------ Deletions ------------------------------ */
-  // Delete by generic provider+id (returns true if any record was removed)
   const deleteByProviderId = async (provider, providerId) => {
     if (!provider || !providerId) return false;
     const key =
@@ -150,7 +156,6 @@ export function createUserRepo({ seed = [] } = {}) {
     return deleted;
   };
 
-  // Convenience wrapper for Facebook
   const deleteByFacebookId = async (fbId) => deleteByProviderId('facebook', fbId);
 
   /* ------------------------------- Debugging ----------------------------- */

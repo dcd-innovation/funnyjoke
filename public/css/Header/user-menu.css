@@ -49,7 +49,9 @@
 .avatar-btn .avatar-img{
   width: 34px; height: 34px;
   border-radius: 50%;
-  object-fit: cover; display: block;
+  object-fit: cover;
+  display: block;
+  aspect-ratio: 1 / 1;
 }
 .avatar-btn .avatar-name{
   font-size: 14px;
