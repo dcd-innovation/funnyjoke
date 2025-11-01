@@ -51,6 +51,15 @@ router.get('/data-deletion', (req, res) => {
   res.status(200).render('pages/data-deletion');
 });
 
+
+router.get('/facebook/deletion-status/:code', (req, res) => {
+  res.render('pages/deletion-status', {
+    title: 'Deletion Request Received',
+    pageDescription: 'Confirmation for your Facebook data deletion request.',
+    code: req.params.code
+  });
+});
+
 /* ------------------------------ Auth-gated pages --------------------------- */
 router.get('/profile', ensureAuthed, asyncHandler(pages.profile));
 router.get('/post/new', ensureAuthed, (req, res) => {
@@ -63,5 +72,14 @@ router.get('/post/new', ensureAuthed, (req, res) => {
 
 /* ------------------- Mixed endpoint: JSON / partial / full page ------------ */
 router.get('/shuffle', asyncHandler(pages.shuffle));
+
+
+/* ------------------------Terms Pages-------------------------------------- */
+router.get('/terms', (req, res) => {
+  res.render('pages/terms', {
+    title: 'Terms of Service',
+    pageDescription: 'Terms of Service for FunnyJoke'
+  });
+});
 
 export default router;

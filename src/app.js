@@ -4,6 +4,9 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import session from 'express-session';
 import expressLayouts from 'express-ejs-layouts';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 
 import { config } from './config/env.js';
 import { requestLogger } from './utils/loggers.js';
@@ -36,13 +39,44 @@ const __dirname  = path.dirname(__filename);
 const app = express();
 
 /* ----------------------------- Core middleware ---------------------------- */
-if (config.isProd) app.set('trust proxy', 1);
+if (config.isProd) app.set('trust proxy', 1); // needed for secure cookies on Render
+app.disable('x-powered-by');                  // minor hardening
+
+// Gzip/brotli where available
+app.use(compression());
+
+// Secure headers + CSP (allow FB/Google avatars)
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+        "script-src": ["'self'"],                 // keep strict; add nonces only if needed
+        "style-src": ["'self'", "'unsafe-inline'"], // allow inline styles if present
+        "img-src": [
+          "'self'",
+          "data:",
+          "https://graph.facebook.com",
+          "https://*.fbcdn.net",
+          "https://*.facebook.com",
+          "https://lh3.googleusercontent.com",
+          "https://*.googleusercontent.com"
+        ],
+        "connect-src": ["'self'"],
+        "font-src": ["'self'", "data:"],
+        "frame-ancestors": ["'none'"]
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
+);
 
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(requestLogger());
 
-// Static assets (prod: cache aggressively; dev: minimal)
+// Static assets (prod: cache; dev: no-store)
 app.use(
   express.static(path.join(__dirname, '..', 'public'), {
     etag: true,
@@ -50,17 +84,19 @@ app.use(
     maxAge: config.isProd ? '7d' : 0,
     setHeaders(res) {
       if (!config.isProd) res.setHeader('Cache-Control', 'no-store');
-    },
+    }
   })
 );
 
 /* ----------------------------- Sessions + Passport ------------------------ */
 let store;
+let redisClient; // so we can close gracefully
+
 if (process.env.REDIS_URL) {
   const useTls = process.env.REDIS_URL.startsWith('rediss://');
-  const redisClient = createRedisClient({
+  redisClient = createRedisClient({
     url: process.env.REDIS_URL,
-    socket: useTls ? { tls: true, rejectUnauthorized: false } : undefined,
+    socket: useTls ? { tls: true, rejectUnauthorized: false } : undefined
   });
 
   redisClient.on('error', (err) => {
@@ -71,28 +107,28 @@ if (process.env.REDIS_URL) {
 
   store = new RedisStore({
     client: redisClient,
-    prefix: 'sess:',
+    prefix: 'sess:'
   });
 } else {
   console.warn('[session] REDIS_URL not set — using MemoryStore (dev only)');
 }
 
 app.use(session({
-  store,                        // undefined => MemoryStore (only OK for local dev)
+  store,                        // undefined => MemoryStore (OK for local dev only)
   secret: config.sessionSecret, // REQUIRED
   resave: false,
   saveUninitialized: false,
+  name: 'fj.sid',
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
     secure: config.isProd,            // true on Render/HTTPS
-    maxAge: 1000 * 60 * 60 * 24 * 7,  // 7 days
-  },
+    maxAge: 1000 * 60 * 60 * 24 * 7   // 7 days
+  }
 }));
 
 // Configure passport (singleton)
 const userRepo = createUserRepo();
-console.log('[boot] userRepo methods:', Object.keys(userRepo));
 await configurePassport({ userRepo });
 app.use(passport.initialize());
 app.use(passport.session());
@@ -138,14 +174,19 @@ app.use((req, res, next) => {
       config.apple?.teamID &&
       config.apple?.keyID &&
       config.apple?.privateKey
-    ),
+    )
   };
 
   next();
 });
 
+/* -------------------------------- Hardening -------------------------------- */
+// Light rate limits on sensitive paths
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 120 });
+const deletionLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 30 });
+app.use('/auth/', authLimiter);
+
 /* --------------------------------- Health --------------------------------- */
-// Simple healthcheck for uptime checks & FB/Google verifications if needed
 app.get('/healthz', (_req, res) => res.status(200).json({ ok: true }));
 
 /* --------------------------------- Routes -------------------------------- */
@@ -153,13 +194,22 @@ app.use('/api/jokes', jokesApiRoutes);
 app.use('/', buildAuthRoutes({ passport, userRepo })); // /login /register /logout /profile
 app.use('/', pagesRoutes);
 
-// facebook
+// Facebook routes (data deletion + optional status page)
 const fbRouter = createFacebookRouter({ userRepo });
-app.use('/facebook', fbRouter);   // serves /facebook/data-deletion and /facebook/deletion-status
+app.use('/facebook', deletionLimiter, fbRouter);
 
 /* ---------------------------- 404 & Error handlers ------------------------ */
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+/* ------------------------------ Graceful shutdown ------------------------- */
+function shutdown() {
+  if (redisClient) {
+    redisClient.quit().catch(() => redisClient.disconnect());
+  }
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 /* -------------------------------- Exports -------------------------------- */
 export default app;

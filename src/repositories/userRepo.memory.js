@@ -4,31 +4,38 @@ export function createUserRepo({ seed = [] } = {}) {
 
   // ============================
   // Robust avatar picker (FINAL)
-  // - Facebook: Graph URL with explicit size (stable, no lookaside)
-  // - Google: keep size query (=s96); do NOT strip query params
+  // - Facebook: Graph /picture with explicit size (stable, no lookaside)
+  // - Google: keep size query (=s96); DO NOT strip query params
   // ============================
-  const pickAvatarFromProfile = (provider, profile) => {
+
+  function fbAvatarUrlFromId(fbId, size = 128, cacheKey = null) {
+    const base = `https://graph.facebook.com/v20.0/${encodeURIComponent(fbId)}/picture?width=${size}&height=${size}`;
+    const t = cacheKey ?? Date.now(); // pass a stable key if preferred
+    return `${base}&t=${t}`;
+  }
+
+  const pickAvatarFromProfile = (provider, profile, opts = {}) => {
     if (!profile) return null;
 
     let url = profile?.photos?.[0]?.value || null;
 
     if (provider === 'google') {
-      // Fallback if photos[] missing
       url = url || profile?._json?.picture || null;
-      // Normalize to s=96; if none, append it
+
+      // Normalize Google size; keep existing query string intact.
       if (url && url.includes('=s')) {
         url = url.replace(/=s\d+/, '=s96');
       } else if (url && url.includes('googleusercontent')) {
         const sep = url.includes('?') ? '&' : '?';
         url = `${url}${sep}s=96`;
       }
-      // IMPORTANT: keep query string (don’t split '?')
     }
 
     if (provider === 'facebook') {
       const fbId = String(profile?.id || '').trim();
       if (fbId) {
-        url = `https://graph.facebook.com/${fbId}/picture?width=128&height=128&redirect=1`;
+        const size = Number(opts.size) || 128;
+        url = fbAvatarUrlFromId(fbId, size, opts.cacheKey);
       }
     }
 
@@ -100,8 +107,7 @@ export function createUserRepo({ seed = [] } = {}) {
     let existing = rawEmail ? _users.find((u) => norm(u.email) === rawEmail) : null;
     if (existing) {
       if (!existing.name && name) existing.name = name;
-      // Refresh avatar each login if provider sends one
-      if (avatarUrl) existing.avatarUrl = avatarUrl;
+      if (avatarUrl) existing.avatarUrl = avatarUrl; // refresh avatar on login
       if (provider === 'google')   existing.googleId   = providerId;
       if (provider === 'facebook') existing.facebookId = providerId;
       if (provider === 'apple')    existing.appleId    = providerId;
@@ -116,7 +122,7 @@ export function createUserRepo({ seed = [] } = {}) {
         (provider === 'apple'    && _users.find((u) => u.appleId    === providerId)) ||
         null;
       if (byProvider) {
-        if (avatarUrl) byProvider.avatarUrl = avatarUrl; // refresh avatar
+        if (avatarUrl) byProvider.avatarUrl = avatarUrl;
         return clone(byProvider);
       }
     }
