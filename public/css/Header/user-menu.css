@@ -1,7 +1,7 @@
 /* =============================
    User Menu (container)
 ============================= */
-.user-menu{
+.user-menu {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -11,7 +11,7 @@
 }
 
 /* Optional: small button inside forms (legacy) */
-.user-menu form button{
+.user-menu form button {
   background: transparent;
   border: 1px solid currentColor;
   color: inherit;
@@ -21,19 +21,19 @@
   cursor: pointer;
   transition: background-color .3s ease;
 }
-.user-menu form button:hover{ background-color: rgba(0,0,0,.06); }
-.dark .user-menu form button:hover{ background-color: rgba(255,255,255,.12); }
+.user-menu form button:hover { background-color: rgba(0,0,0,.06); }
+.dark .user-menu form button:hover { background-color: rgba(255,255,255,.12); }
 
-.user-name{ font-weight: 500; }
+.user-name { font-weight: 500; }
 
 /* =============================
    Avatar button + label
 ============================= */
-.avatar-btn{
+.avatar-btn {
   height: 34px;
   border-radius: 999px;             /* pill so text fits */
   overflow: hidden;
-  padding: 0 8px;                    /* room for name/chevron */
+  padding: 0 8px;                   /* room for name/chevron */
   border: 0;
   background: transparent;
   display: inline-flex;
@@ -42,31 +42,53 @@
   cursor: pointer;
   line-height: 1;
 }
-.avatar-btn:focus-visible{
+.avatar-btn:focus-visible {
   outline: 2px solid #2f7fff;
   outline-offset: 2px;
 }
-.avatar-btn .avatar-img{
-  width: 34px; height: 34px;
+
+/* Unified avatar style for all buttons */
+.avatar-img {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
   aspect-ratio: 1 / 1;
 }
-.avatar-btn .avatar-name{
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
+
+/* Label variant adjustments */
+.avatar-btn--label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  width: auto;
+  height: auto;
+  background: transparent;
 }
-.avatar-btn .chev{ opacity: .7; }
+.avatar-btn--label .avatar-img {
+  flex: 0 0 34px; /* pin width so name doesn’t stretch it */
+}
+.avatar-name {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.avatar-btn .chev { opacity: .7; }
+.avatar-btn--label .chev { opacity: .6; }
+.avatar-btn--label:hover .chev { opacity: 1; }
 
 /* Hide name on narrow screens */
-@media (max-width: 640px){
-  .avatar-btn .avatar-name{ display: none; }
+@media (max-width: 640px) {
+  .avatar-btn .avatar-name { display: none; }
 }
 
-/* Expanded state hint (optional) */
-.avatar-btn[aria-expanded="true"] .chev{
+/* Expanded state hint */
+.avatar-btn[aria-expanded="true"] .chev {
   transform: rotate(180deg);
   transition: transform .15s ease;
 }
@@ -74,8 +96,8 @@
 /* =============================
    Avatar dropdown (profile menu)
 ============================= */
-.avatar-menu{
-  display: none;                     /* toggled via .is-open */
+.avatar-menu {
+  display: none; /* toggled via .is-open */
   position: absolute;
   top: 48px; right: 0;
   width: 300px;
@@ -87,22 +109,22 @@
   z-index: 1002;
   box-shadow: 0 10px 24px rgba(0,0,0,.12);
 }
-.avatar-menu.is-open{ display: block; }
+.avatar-menu.is-open { display: block; }
 
-.avatar-menu ul{ list-style: none; margin: 0; padding: 0; }
-.avatar-menu li{ padding: 10px 12px; }
+.avatar-menu ul { list-style: none; margin: 0; padding: 0; }
+.avatar-menu li { padding: 10px 12px; }
 
-.avatar-menu a{
+.avatar-menu a {
   color: inherit;
   text-decoration: none;
   display: block;
   padding: 6px 4px;
   border-radius: 8px;
 }
-.avatar-menu a:hover{ background: #F3F4F6; }
+.avatar-menu a:hover { background: #F3F4F6; }
 
 /* Switch row */
-.menu-switch{
+.menu-switch {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -110,7 +132,7 @@
 }
 
 /* Disclosure rows */
-.menu-accordion button{
+.menu-accordion button {
   width: 100%;
   text-align: left;
   background: none;
@@ -121,113 +143,111 @@
   border-radius: 8px;
   cursor: pointer;
 }
-.menu-accordion button:hover{ background:#F3F4F6; }
+.menu-accordion button:hover { background: #F3F4F6; }
 
-.menu-sep.hr{
-  padding: 0; height: 1px; margin: 6px 0;
-  background: #eee; border-radius: 1px;
+.menu-sep.hr {
+  padding: 0;
+  height: 1px;
+  margin: 6px 0;
+  background: #eee;
+  border-radius: 1px;
 }
-.menu-foot{ color: #6B7280; font-size: 12px; }
+.menu-foot { color: #6B7280; font-size: 12px; }
 
 /* =============================
    Toggle switch (scoped)
 ============================= */
-.avatar-menu .switch{
-  position: relative; display: inline-block; width: 44px; height: 24px;
+.avatar-menu .switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
 }
-.avatar-menu .switch input{ display: none; }
-.avatar-menu .slider{
-  position: absolute; inset: 0;
+.avatar-menu .switch input { display: none; }
+.avatar-menu .slider {
+  position: absolute;
+  inset: 0;
   background: #E5E7EB;
-  border-radius: 999px; transition: all .2s;
-}
-.avatar-menu .slider:before{
-  content: "";
-  position: absolute; left: 3px; top: 3px;
-  width: 18px; height: 18px;
-  background: #fff;
-  border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  border-radius: 999px;
   transition: all .2s;
 }
-.avatar-menu .switch input:checked + .slider{ background: #2f7fff; }
-.avatar-menu .switch input:checked + .slider:before{ transform: translateX(20px); }
+.avatar-menu .slider:before {
+  content: "";
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  transition: all .2s;
+}
+.avatar-menu .switch input:checked + .slider { background: #2f7fff; }
+.avatar-menu .switch input:checked + .slider:before { transform: translateX(20px); }
 
 /* =============================
    Dark mode
 ============================= */
-.dark .avatar-menu{
-  background: #141414; color: #EAEAEA;
+.dark .avatar-menu {
+  background: #141414;
+  color: #EAEAEA;
   border: 1px solid #262626;
   box-shadow: 0 10px 28px rgba(0,0,0,.45);
 }
-.dark .avatar-menu a:hover{ background:#1c1c1c; }
-.dark .menu-accordion button{ color:#cfcfcf; }
-.dark .menu-foot{ color:#9aa0a6; }
-.dark .avatar-menu .slider{ background:#333; }
-.dark .avatar-menu .slider:before{ background:#eaeaea; }
+.dark .avatar-menu a:hover { background: #1c1c1c; }
+.dark .menu-accordion button { color: #cfcfcf; }
+.dark .menu-foot { color: #9aa0a6; }
+.dark .avatar-menu .slider { background: #333; }
+.dark .avatar-menu .slider:before { background: #eaeaea; }
 
 /* =============================
    Legacy guest hover menu (optional)
 ============================= */
-.guest-wrapper{ position: relative; }
-.guest-wrapper:hover .dropdown-menu{
-  display: block; opacity: 1; transform: translateY(0);
+.guest-wrapper { position: relative; }
+.guest-wrapper:hover .dropdown-menu {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
-.dropdown-menu{
-  display: none; opacity: 0;
-  position: absolute; top: 100%; right: 0;
-  background: #fff; color: #000;
-  list-style: none; padding: 10px; margin: 0;
+.dropdown-menu {
+  display: none;
+  opacity: 0;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  color: #000;
+  list-style: none;
+  padding: 10px;
+  margin: 0;
   box-shadow: 0 2px 6px rgba(0,0,0,.15);
   transform: translateY(-10px);
   transition: opacity .3s ease, transform .3s ease;
   z-index: 1001;
 }
-.dropdown-menu li{ margin: 5px 0; }
-.dropdown-menu li a{
-  color: #333; text-decoration: none; transition: color .3s ease;
+.dropdown-menu li { margin: 5px 0; }
+.dropdown-menu li a {
+  color: #333;
+  text-decoration: none;
+  transition: color .3s ease;
 }
-.dropdown-menu li a:hover{ color: #f1702f; }
+.dropdown-menu li a:hover { color: #f1702f; }
 
 /* =============================
    Logout button styled as link
 ============================= */
-.avatar-menu form{ margin: 0; }
-.menu-link-btn{
-  display: block; width: 100%;
-  background: none; border: 0; padding: 6px 4px; margin: 0;
-  font: inherit; color: inherit; text-align: left;
-  border-radius: 8px; cursor: pointer;
+.avatar-menu form { margin: 0; }
+.menu-link-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 6px 4px;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
 }
-.menu-link-btn:hover{ background:#F3F4F6; }
-.dark .menu-link-btn:hover{ background:#1c1c1c; }
-
-/* Labeled variant: button grows to fit text, only the IMG stays 34x34 */
-.avatar-btn--label{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 10px;
-  border-radius: 9999px;
-  width: auto; height: auto;   /* override fixed 34x34 from base */
-  background: transparent;
-}
-
-.avatar-btn--label .avatar-img{
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex: 0 0 34px;
-}
-
-.avatar-name{
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-
-.avatar-btn--label .chev{ opacity: .6; }
-
-.avatar-btn--label:hover .chev{ opacity: 1; }
+.menu-link-btn:hover { background: #F3F4F6; }
+.dark .menu-link-btn:hover { background: #1c1c1c; }
