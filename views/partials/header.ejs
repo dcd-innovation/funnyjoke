@@ -41,8 +41,8 @@
         <!-- Avatar button (guest) -->
         <button class="avatar-btn" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
           <img
-            src="/images/icons/user-icon-match-34.png"
-            srcset="/images/icons/user-icon-match-68.png 2x, /images/icons/user-icon-match-102.png 3x"
+            class="avatar-img"
+            src="/images/icons/avatar-default.png"
             alt="Account"
             width="34" height="34"
           />
@@ -50,9 +50,10 @@
       <% } else { %>
         <!-- Avatar button (authed) -->
         <button class="avatar-btn avatar-btn--label" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu" data-avatar-toggle>
-          <img src="<%= user.avatarUrl || '/images/icons/avatar-default.png' %>"
-            alt="Account"
+          <img
             class="avatar-img"
+            src="<%= user && user.avatarUrl ? user.avatarUrl : '/images/icons/avatar-default.png' %>"
+            alt="Account"
             referrerpolicy="no-referrer"
             width="34" height="34"
           />
@@ -116,10 +117,8 @@
 
       <!-- Post button -->
       <% if (!user) { %>
-        <!-- Guest: open auth modal -->
         <button class="post-btn" data-open-post>✏️ Post</button>
       <% } else { %>
-        <!-- Authed: real link (adjust route if different) -->
         <a class="post-btn" href="/post/new">✏️ Post</a>
       <% } %>
     </div>

@@ -7,6 +7,7 @@ import expressLayouts from 'express-ejs-layouts';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
+import crypto from 'crypto'; // + nonce support
 
 import { config } from './config/env.js';
 import { requestLogger } from './utils/loggers.js';
@@ -39,21 +40,34 @@ const __dirname  = path.dirname(__filename);
 const app = express();
 
 /* ----------------------------- Core middleware ---------------------------- */
-if (config.isProd) app.set('trust proxy', 1); // needed for secure cookies on Render
-app.disable('x-powered-by');                  // minor hardening
+if (config.isProd) app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
-// Gzip/brotli where available
+// Per-request CSP nonce (for inline <script nonce="..."> if any)
+app.use((req, res, next) => {
+  res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
 app.use(compression());
 
-// Secure headers + CSP (allow FB/Google avatars)
+// Secure headers + CSP (allows FB/Google avatars + Google Fonts + nonce)
 app.use(
   helmet({
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
         "default-src": ["'self'"],
-        "script-src": ["'self'"],                 // keep strict; add nonces only if needed
-        "style-src": ["'self'", "'unsafe-inline'"], // allow inline styles if present
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"],
+        // Allow inline scripts only via per-request nonce
+        "script-src": ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
+        // Allow Google Fonts CSS
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        // Some browsers check style-src-elem separately
+        "style-src-elem": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        // Fonts from gstatic
+        "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
         "img-src": [
           "'self'",
           "data:",
@@ -64,7 +78,6 @@ app.use(
           "https://*.googleusercontent.com"
         ],
         "connect-src": ["'self'"],
-        "font-src": ["'self'", "data:"],
         "frame-ancestors": ["'none'"]
       }
     },
@@ -90,7 +103,7 @@ app.use(
 
 /* ----------------------------- Sessions + Passport ------------------------ */
 let store;
-let redisClient; // so we can close gracefully
+let redisClient; // for graceful shutdown
 
 if (process.env.REDIS_URL) {
   const useTls = process.env.REDIS_URL.startsWith('rediss://');
@@ -114,16 +127,16 @@ if (process.env.REDIS_URL) {
 }
 
 app.use(session({
-  store,                        // undefined => MemoryStore (OK for local dev only)
-  secret: config.sessionSecret, // REQUIRED
+  store,
+  secret: config.sessionSecret,
   resave: false,
   saveUninitialized: false,
   name: 'fj.sid',
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    secure: config.isProd,            // true on Render/HTTPS
-    maxAge: 1000 * 60 * 60 * 24 * 7   // 7 days
+    secure: config.isProd,
+    maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
 
@@ -132,6 +145,11 @@ const userRepo = createUserRepo();
 await configurePassport({ userRepo });
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, res, next) => {
+  console.log('[avatar]', req.user?.avatarUrl || null);
+  next();
+});
 
 /* ------------------------------- View engine ------------------------------ */
 app.use(expressLayouts);
@@ -162,7 +180,7 @@ app.use((req, res, next) => {
   res.locals.error = req.session?.error ?? null;
   if (req.session) req.session.error = null;
 
-  // Public, non-secret flags for templates
+  // Public flags for templates
   res.locals.env = {
     GOOGLE_CLIENT_ID:   config.google?.clientID || '',
     FACEBOOK_CLIENT_ID: config.facebook?.clientID || '',
@@ -181,7 +199,6 @@ app.use((req, res, next) => {
 });
 
 /* -------------------------------- Hardening -------------------------------- */
-// Light rate limits on sensitive paths
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 120 });
 const deletionLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 30 });
 app.use('/auth/', authLimiter);
@@ -191,7 +208,7 @@ app.get('/healthz', (_req, res) => res.status(200).json({ ok: true }));
 
 /* --------------------------------- Routes -------------------------------- */
 app.use('/api/jokes', jokesApiRoutes);
-app.use('/', buildAuthRoutes({ passport, userRepo })); // /login /register /logout /profile
+app.use('/', buildAuthRoutes({ passport, userRepo }));
 app.use('/', pagesRoutes);
 
 // Facebook routes (data deletion + optional status page)

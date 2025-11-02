@@ -84,12 +84,14 @@
 
   <!-- Optional loading spinner -->
   <div id="loading" class="loading-spinner" hidden>Loading…</div>
-  <script>
+  
+  <script nonce="<%= cspNonce %>">
     window.addEventListener('load', () => {
       const el = document.getElementById('loading');
       if (el) el.hidden = true;
     });
   </script>
+
 
   <!-- Back to top -->
   <button class="to-top" type="button" aria-label="Back to top" data-to-top hidden>↑</button>
