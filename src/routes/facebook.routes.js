@@ -68,5 +68,18 @@ export function createFacebookRouter({ userRepo }) {
     }
   });
 
+  // If someone GETs the POST endpoint, send them to the info page
+  router.get('/data-deletion', (req, res) => res.redirect(302, '/data-deletion'));
+
+  // Show a friendly confirmation page at /facebook/deletion-status/:code
+  router.get('/deletion-status/:code', (req, res) => {
+    const isError = req.query.error === '1';
+    res.locals.pageTitle = 'Deletion Status';
+    res.status(200).render('pages/deletion-status', {
+      code: req.params.code,
+      error: isError
+    });
+  });
+
   return router;
 }
