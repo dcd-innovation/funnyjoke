@@ -195,6 +195,9 @@ app.use((req, res, next) => {
     )
   };
 
+  res.locals.title = null;      // legacy key (some routes might set this)
+  res.locals.pageTitle = null;  // your newer key used in some routes
+
   next();
 });
 

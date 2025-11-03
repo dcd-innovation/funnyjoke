@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title><%= title || 'FunnyJoke' %></title>
+  <title>
+    <%= (typeof pageTitle !== 'undefined' && pageTitle)
+        ? pageTitle
+        : (typeof title !== 'undefined' && title ? title : 'FunnyJoke') %>
+  </title>
+
   <% if (canonical) { %><link rel="canonical" href="<%= canonical %>"><% } %>
 
   <!-- SEO -->
@@ -12,7 +17,10 @@
   <meta name="keywords" content="jokes, riddles, trivia, quotes, humor">
 
   <!-- Open Graph / Twitter -->
-  <meta property="og:title" content="<%= title || 'FunnyJoke' %>">
+  <meta property="og:title" content="<%= (typeof pageTitle !== 'undefined' && pageTitle)
+    ? pageTitle
+    : (typeof title !== 'undefined' && title ? title : 'FunnyJoke') %>">
+
   <meta property="og:description" content="<%= pageDescription || 'Best jokes & riddles' %>">
   <meta property="og:image" content="<%= ogImage || (baseUrl + '/images/og-1200x630.png') %>">
   <meta property="og:url" content="<%= canonical || baseUrl %>">
@@ -84,7 +92,7 @@
 
   <!-- Optional loading spinner -->
   <div id="loading" class="loading-spinner" hidden>Loading…</div>
-  
+
   <script nonce="<%= cspNonce %>">
     window.addEventListener('load', () => {
       const el = document.getElementById('loading');
