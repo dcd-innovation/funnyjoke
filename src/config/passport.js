@@ -3,6 +3,8 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { config, getCallbackUrl } from './env.js';
+import { fetch } from 'undici';
+
 
 export async function configurePassport({ userRepo }) {
   if (!userRepo || !userRepo.findById) {
