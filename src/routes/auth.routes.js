@@ -21,8 +21,6 @@ export function buildAuthRoutes({ passport, userRepo }) {
   const router = Router();
 
   /* ------------------------- Helpers ------------------------- */
-
-  // Capture ?returnTo before kicking off OAuth so we can redirect back after callback
   const captureReturnTo = (req, _res, next) => {
     if (req.query?.returnTo && req.session) {
       req.session.returnTo = String(req.query.returnTo);
@@ -30,7 +28,6 @@ export function buildAuthRoutes({ passport, userRepo }) {
     next();
   };
 
-  // DRY: redirect /login or /register to homepage with ?auth=...
   const redirectWithAuth = (auth) => (req, res) => {
     const params = new URLSearchParams({ auth });
     if (req.query.returnTo) params.set('returnTo', String(req.query.returnTo));
@@ -38,17 +35,15 @@ export function buildAuthRoutes({ passport, userRepo }) {
   };
 
   /* ------------------- Modal-first GET routes ------------------- */
-  router.get('/login',    redirectWithAuth('login'));
+  router.get('/login', redirectWithAuth('login'));
   router.get('/register', redirectWithAuth('register'));
 
   /* ----------------------- Local auth (POST) --------------------- */
-  router.post('/login',    postLogin);
+  router.post('/login', postLogin);
   router.post('/register', postRegister);
 
   /* -------------------------- Session --------------------------- */
   router.get('/profile', ensureAuthed, showProfile);
-
-  // POST-only logout (recommended)
   router.post('/logout', logout);
 
   /* --------------------------- OAuth ---------------------------- */
@@ -60,6 +55,7 @@ export function buildAuthRoutes({ passport, userRepo }) {
   router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/?auth=login' }),
     (req, res) => {
+      if (req.user) req.session.user = { id: req.user._id || req.user.id, provider: 'google' };
       const dest = req.session?.returnTo || '/profile';
       if (req.session) req.session.returnTo = null;
       res.redirect(dest);
@@ -74,6 +70,7 @@ export function buildAuthRoutes({ passport, userRepo }) {
   router.get('/auth/facebook/callback',
     passport.authenticate('facebook', { failureRedirect: '/?auth=login' }),
     (req, res) => {
+      if (req.user) req.session.user = { id: req.user._id || req.user.id, provider: 'facebook' };
       const dest = req.session?.returnTo || '/profile';
       if (req.session) req.session.returnTo = null;
       res.redirect(dest);
@@ -81,13 +78,11 @@ export function buildAuthRoutes({ passport, userRepo }) {
   );
 
   // Apple
-  router.get('/auth/apple',
-    captureReturnTo,
-    passport.authenticate('apple')
-  );
+  router.get('/auth/apple', captureReturnTo, passport.authenticate('apple'));
   router.post('/auth/apple/callback',
     passport.authenticate('apple', { failureRedirect: '/?auth=login' }),
     (req, res) => {
+      if (req.user) req.session.user = { id: req.user._id || req.user.id, provider: 'apple' };
       const dest = req.session?.returnTo || '/profile';
       if (req.session) req.session.returnTo = null;
       res.redirect(dest);

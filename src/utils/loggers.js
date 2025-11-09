@@ -19,7 +19,6 @@ function levelEnabled(lvl) {
 }
 
 function ts() {
-  // 2025-10-18T09:30:15.123Z
   return new Date().toISOString();
 }
 
@@ -35,7 +34,6 @@ function fmt(level, msg, meta) {
 
 function normalizeMeta(meta) {
   if (!meta) return {};
-  // Avoid logging raw Error objects unformatted
   if (meta instanceof Error) return { err: serializeError(meta) };
   if (meta.err instanceof Error) return { ...meta, err: serializeError(meta.err) };
   return meta;
@@ -58,8 +56,6 @@ function write(level, obj) {
       level === "warn"  ? COLORS.yellow :
       level === "info"  ? COLORS.blue :
       COLORS.gray;
-
-    // Pretty prefix for dev
     process.stdout.write(`${color}${level.toUpperCase()}${COLORS.reset} ${line}\n`);
   } else {
     process.stdout.write(line + "\n");
@@ -75,7 +71,7 @@ export const logger = {
 
 /**
  * Express request logger (lightweight)
- * Logs method, url, status, ms, and user id (if present on req.session.user)
+ * Logs method, url, status, ms, and user id (if present)
  */
 export function requestLogger() {
   return (req, res, next) => {
@@ -83,7 +79,13 @@ export function requestLogger() {
 
     res.on("finish", () => {
       const durMs = Number(process.hrtime.bigint() - start) / 1e6;
-      const userId = req.session?.user?.id || null;
+      // ✅ unified user tracking
+      const userId =
+        req.user?._id ||
+        req.user?.id ||
+        req.session?.user?._id ||
+        req.session?.user?.id ||
+        null;
 
       logger.info("http_request", {
         method: req.method,

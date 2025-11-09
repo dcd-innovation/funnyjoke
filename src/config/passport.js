@@ -3,8 +3,6 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { config, getCallbackUrl } from './env.js';
-import { fetch } from 'undici';
-
 
 export async function configurePassport({ userRepo }) {
   if (!userRepo || !userRepo.findById) {
@@ -17,7 +15,12 @@ export async function configurePassport({ userRepo }) {
   /* ------------------------------------------------------------------------ */
   /* serialize/deserialize                                                    */
   /* ------------------------------------------------------------------------ */
-  passport.serializeUser((user, done) => done(null, user.id));
+  // Store a stable id in the session (Mongo _id preferred; fallback to id)
+  passport.serializeUser((user, done) => {
+    const sid = user?._id || user?.id;
+    done(null, sid);
+  });
+
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await userRepo.findById(id);
@@ -27,7 +30,7 @@ export async function configurePassport({ userRepo }) {
     }
   });
 
-  // Look up by email (preferred) or username (back-compat)
+  // Prefer email lookup; fallback to username for legacy users
   const findByEmailOrUsername = async (emailLike) => {
     if (typeof userRepo.findByEmail === 'function') {
       return userRepo.findByEmail(emailLike);
@@ -169,16 +172,12 @@ export async function configurePassport({ userRepo }) {
 export function ensureAuthed(req, res, next) {
   if (req.isAuthenticated && req.isAuthenticated()) return next();
 
-  // Prefer putting where to return into the session for non-GET or complex cases
   const dest = req.originalUrl || '/profile';
   if (req.session) req.session.returnTo = dest;
 
-  // For GET requests we can also surface it via query so modal JS can pick it up immediately
   if (req.method === 'GET') {
     const encoded = encodeURIComponent(dest);
     return res.redirect(`/?auth=login&returnTo=${encoded}`);
   }
-
-  // Fallback
   return res.redirect('/?auth=login');
 }
