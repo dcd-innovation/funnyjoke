@@ -2,21 +2,45 @@
 
 <div class="home" data-page="home">
   <!-- Row 1: tabs -->
-  <nav class="tabs" aria-label="Feed tabs">
-    <% (tabs || []).forEach((t, i) => { %>
-      <a class="tab <%= i === 0 ? 'is-active' : '' %>" href="#"><%= t %></a>
+  <nav class="tabs" role="tablist" aria-label="Feed tabs">
+    <% (tabs || []).forEach((t, i) => {
+         const id = `tab-${i}`;
+         const selected = i === 0;
+    %>
+      <button
+        role="tab"
+        id="<%= id %>"
+        class="tab<%= selected ? ' is-active' : '' %>"
+        aria-selected="<%= selected %>"
+        aria-controls="panel-feed"
+        tabindex="<%= selected ? '0' : '-1' %>">
+        <%= t %>
+      </button>
     <% }) %>
   </nav>
 
   <!-- Row 2: chips -->
   <div class="chips" role="list">
-    <% (chips || []).forEach(c => { %>
-      <a class="chip" role="listitem" href="/t/<%= c.replace(/\s+/g,'-') %>"><%= c %></a>
+    <% (chips || []).forEach(c => {
+         const slug = c.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    %>
+      <a
+        class="chip"
+        role="listitem"
+        href="/t/<%= slug %>"
+        aria-label="Topic: <%= c %>">
+        <%= c %>
+      </a>
     <% }) %>
   </div>
 
-  <!-- Row 3+: posts (JS shuffles this block) -->
-  <section data-feed>
+  <!-- Row 3: feed panel (ARIA-wired to first tab; shows skeleton until posts render) -->
+  <section id="panel-feed" role="tabpanel" aria-labelledby="tab-0" data-feed>
+    <div class="skeleton-list">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
     <%- include('../partials/post-list.ejs', { posts }) %>
   </section>
 </div>

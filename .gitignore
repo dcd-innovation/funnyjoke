@@ -26,3 +26,9 @@ Thumbs.db
 .idea/
 *.swp
 
+global-bundle.pem
+
+# local secrets & deps
+.env
+node_modules/
+

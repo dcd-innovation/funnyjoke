@@ -9,25 +9,58 @@
    FEED (right column) UI
 ================================= */
 
-/* Tabs row */
+/* Tabs row — style like chips */
 .tabs{
-  display:flex; gap:24px; align-items:flex-end;
-  border-bottom:1px solid #DADDE1; padding:0 4px;
-  margin:0 0 12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:12px 0 16px;
+  border:0;                 /* remove old bottom border */
+  overflow-x:visible;       /* no horizontal scrollbar look */
 }
+
 .tab{
-  padding:12px 2px; color:#222; text-decoration:none; font-weight:700;
+  appearance:none;
+  border:1px solid #DADDE1;
+  background:#F5F6F7;
+  color:#222;
+  font-weight:700;          /* keep bold like your old tabs */
+  font-size:13px;           /* match chips */
+  text-decoration:none;
+  padding:6px 12px;         /* match chips */
+  border-radius:999px;      /* pill shape */
+  line-height:1.1;
   position:relative;
 }
-.tab.is-active::after{
-  content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px;
-  background:#111; border-radius:3px;
-}
-.dark .tabs{ border-color:#2a2a2a; }
-.dark .tab{ color:#eaeaea; }
-.dark .tab.is-active::after{ background:#fff; }
 
-/* Chips row */
+/* Active tab = stronger pill (no underline bar) */
+.tab[aria-selected="true"],
+.tab.is-active{
+  background:#ECEEF1;
+  border-color:#C9CDD3;
+}
+
+/* Hover/focus like chips */
+.tab:hover{ background:#ECEEF1; }
+.tab:focus-visible{
+  outline:2px solid #2f7fff; outline-offset:2px;
+}
+
+/* Remove legacy underline */
+.tab.is-active::after{ content:none; }
+
+/* Dark mode to mirror .chip */
+.dark .tabs{ border-color:transparent; }
+.dark .tab{
+  background:#1b1b1b; color:#ddd; border-color:#2a2a2a;
+}
+.dark .tab:hover{ background:#222; }
+.dark .tab[aria-selected="true"],
+.dark .tab.is-active{
+  background:#222; border-color:#3a3a3a;
+}
+
+/* Chips row (unchanged) */
 .chips{
   display:flex; flex-wrap:wrap; gap:8px;
   padding:12px 0 16px;
@@ -128,5 +161,57 @@
 /* Optional: tighten spacing inside .feed on small screens */
 @media (max-width: 640px){
   .post-title{ font-size:20px; }
+  .tabs{ gap:16px; } /* slightly looser on small screens */
+}
+
+/* =================================
+   HOME main column → 3 rows
+   (Row 1: .tabs, Row 2: .chips, Row 3: [data-feed])
+================================= */
+.home{
+  display:grid;
+  grid-template-rows: auto auto 1fr; /* tabs, chips, feed grows */
+  gap:12px;
+  min-height:100%;
+}
+
+/* Feed region grows and keeps a pleasant min height while loading */
+[data-feed]{
+  min-height:40vh;
+  display:grid;
+  gap:12px;
+}
+
+/* =================================
+   Optional: loading skeletons
+================================= */
+.skeleton-list{ display:grid; gap:12px; }
+.skeleton-card{
+  border-radius:14px;
+  border:1px solid #e9e9e9;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.04) 50%, rgba(0,0,0,0) 100%) 0/200% 100%,
+    #f6f7f9;
+  height:140px;
+  animation: shimmer 1.2s infinite linear;
+}
+@keyframes shimmer{
+  0%{ background-position: 0% 0; }
+  100%{ background-position: 200% 0; }
+}
+
+.dark .skeleton-card{
+  border-color:#262626;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.06) 50%, rgba(255,255,255,0) 100%) 0/200% 100%,
+    #161616;
+}
+
+/* =================================
+   Responsive tweaks
+================================= */
+@media (max-width: 640px){
+  .home{ gap:10px; }
+  [data-feed]{ min-height:35vh; }
   .tabs{ gap:16px; }
 }

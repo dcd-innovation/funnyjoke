@@ -1,6 +1,4 @@
-// /src/config/env.js
 // Load .env and expose a normalized config object for the app.
-
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -58,6 +56,9 @@ export const config = {
     // Keep quotes + \n escapes in .env
     privateKey: process.env.APPLE_PRIVATE_KEY || '',
   },
+
+  // MongoDB
+  MONGO_URI: process.env.MONGO_URI || '', // MongoDB URI from environment variables
 };
 
 /**

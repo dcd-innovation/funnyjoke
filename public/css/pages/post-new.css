@@ -1,0 +1,266 @@
+/* ---------- keep base for variables/reset ---------- */
+@import url('../base.css');
+
+/* =================================
+   LAYOUT
+================================= */
+
+.container.post-new{
+  max-width:1080px;
+  margin:0 auto;
+  padding:24px 20px 56px;
+}
+
+.post-new-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr; /* left composer | right rules */
+  gap:32px;
+}
+
+@media (max-width: 980px){
+  .post-new-grid{ grid-template-columns:1fr; }
+}
+
+/* =================================
+   COMPOSER (left column)
+================================= */
+
+.composer{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.composer-head h1{
+  font-size:26px;
+  font-weight:700;
+  margin:0 0 4px;
+  color:#111;
+}
+.dark .composer-head h1{ color:#f1f1f1; }
+
+/* Tabs row */
+.post-tabs{
+  display:flex;
+  gap:8px;
+  padding-bottom:10px;
+  border-bottom:1px solid #DADDE1;
+}
+.dark .post-tabs{ border-color:#2a2a2a; }
+
+.post-tabs .tab{
+  appearance:none;
+  border:1px solid #DADDE1;
+  background:#F5F6F7;
+  color:#222;
+  font-weight:600;
+  font-size:13px;
+  padding:6px 14px;
+  border-radius:999px;
+  cursor:pointer;
+}
+.post-tabs .tab:hover{ background:#ECEEF1; }
+.post-tabs .tab.is-active,
+.post-tabs .tab[aria-selected="true"]{
+  background:#ECEEF1;
+  border-color:#C9CDD3;
+}
+.post-tabs .tab:focus-visible{ outline:2px solid #2f7fff; outline-offset:2px; }
+
+.dark .post-tabs .tab{
+  background:#1b1b1b; color:#ddd; border-color:#2a2a2a;
+}
+.dark .post-tabs .tab:hover{ background:#222; }
+.dark .post-tabs .tab.is-active{ background:#222; border-color:#3a3a3a; }
+
+/* Panels */
+.tab-panel{ display:block; }
+.tab-panel[hidden]{ display:none; }
+
+/* Fields */
+.form-group{ display:flex; flex-direction:column; gap:8px; }
+
+.input{
+  width:100%;
+  padding:10px 12px;
+  font-size:14px;
+  border:1px solid #DADDE1;
+  border-radius:8px;
+  background:#fff;
+  color:#111;
+}
+.input:focus{ outline:2px solid #2f7fff; outline-offset:1px; }
+
+textarea.input{ resize:vertical; min-height:120px; }
+
+.dark .input{ background:#1b1b1b; color:#eee; border-color:#2a2a2a; }
+
+/* Small “280” counter hint (visual only) */
+.char-hint{ color:#888; font-size:12px; align-self:flex-end; }
+.dark .char-hint{ color:#aaa; }
+
+/* =================================
+   UPLOAD CARD
+================================= */
+
+.upload-box{
+  text-align:center;
+  background:#FAFAFA;
+  border:2px dashed #DADDE1;
+  border-radius:14px;
+  padding:24px 16px;
+  color:#444;
+}
+.dark .upload-box{
+  background:#141414;
+  border-color:#2a2a2a;
+  color:#cfcfcf;
+}
+
+.upload-icon{ font-size:36px; margin-bottom:8px; }
+
+.upload-lead{
+  display:block;
+  font-weight:600;
+  margin-bottom:8px;
+  color:#222;
+}
+.dark .upload-lead{ color:#eaeaea; }
+
+.upload-actions{
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  margin:10px 0;
+}
+
+.or-divider{
+  font-size:13px; color:#777; margin:10px 0;
+}
+.dark .or-divider{ color:#aaa; }
+
+.form-inline{
+  display:flex; gap:8px; justify-content:center; align-items:center;
+  flex-wrap:wrap;
+}
+
+.note{ font-size:12px; color:#777; margin-top:10px; }
+.dark .note{ color:#aaa; }
+
+/* =================================
+   POLL
+================================= */
+
+.poll{ border:0; padding:0; margin:0; }
+
+.poll-actions{ display:flex; gap:8px; align-items:center; }
+
+.poll-options{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.poll-options .option-row .input{ width:100%; }
+
+.poll-duration{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.poll-duration .label{ font-size:13px; color:#555; }
+.dark .poll-duration .label{ color:#cfcfcf; }
+
+/* =================================
+   BUTTONS
+================================= */
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:14px; font-weight:600;
+  cursor:pointer; text-decoration:none; border:none;
+  transition:background .15s ease, transform .05s ease;
+}
+.btn:active{ transform:translateY(1px); }
+
+.btn.primary{ background:#2f7fff; color:#fff; }
+.btn.primary:hover{ background:#1e6fff; }
+
+.btn.secondary{ background:#F5F6F7; border:1px solid #DADDE1; color:#222; }
+.btn.secondary:hover{ background:#ECEEF1; }
+
+.btn.file-btn{ background:#2f7fff; color:#fff; }
+.btn.file-btn:hover{ background:#1e6fff; }
+
+.btn.meme-btn{
+  background:linear-gradient(90deg,#ff6ac1,#8f6fff);
+  color:#fff;
+}
+.btn.meme-btn:hover{ filter:brightness(1.08); }
+
+.btn.add-poll{ background:#F5F6F7; border:1px solid #DADDE1; color:#111; }
+.btn.add-poll:hover{ background:#ECEEF1; }
+
+.form-actions{ margin-top:4px; }
+
+/* =================================
+   RULES (right column)
+================================= */
+
+.rules{
+  background:#F8F9FA;
+  border:1px solid #DADDE1;
+  border-radius:14px;
+  padding:16px 20px;
+  font-size:14px;
+  height:max-content;
+  position:sticky;
+  top:80px; /* sticks under header */
+}
+.rules summary{ font-weight:700; cursor:pointer; margin-bottom:8px; }
+.rules ol{ padding-left:20px; margin:0; }
+.rules li{ margin-bottom:6px; line-height:1.4; }
+
+.dark .rules{
+  background:#151515; border-color:#2a2a2a; color:#eaeaea;
+}
+
+/* =================================
+   ACCESSIBILITY UTIL
+================================= */
+
+.sr-only{
+  position:absolute !important;
+  width:1px; height:1px;
+  padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0);
+  white-space:nowrap; border:0;
+}
+
+/* ===== Center the create-post layout inside the shell (no sidebar) ===== */
+.shell.no-sidebar .feed{
+  display:flex;                 /* center inner container */
+  justify-content:center;
+}
+
+.shell.no-sidebar .feed > .container.post-new{
+  width:100%;
+  max-width:1280px;             /* broader canvas */
+  padding-left:24px;
+  padding-right:24px;
+  margin:0 auto;                /* hard-center */
+}
+
+/* ===== Make left column noticeably wider than right ===== */
+.post-new-grid{
+  grid-template-columns: 3fr 1.2fr;   /* left (composer) | right (rules) */
+  gap:36px;
+}
+
+/* Slightly wider split on very large screens */
+@media (min-width: 1400px){
+  .post-new-grid{ grid-template-columns: 3.3fr 1fr; }
+}
+
+/* Safety min/max for the sidebar so it stays neat */
+.rules{
+  min-width:300px;
+  max-width:420px;
+}
+
+/* Single-column on narrow screens (keep centered) */
+@media (max-width: 980px){
+  .post-new-grid{ grid-template-columns: 1fr; gap:20px; }
+  .rules{ position:static; max-width:none; }
+}

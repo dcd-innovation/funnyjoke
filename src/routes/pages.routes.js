@@ -67,6 +67,7 @@ router.get('/post/new', ensureAuthed, (req, res) => {
     title: 'Create a Post',
     showFooter: false,
     showSidebar: false,
+    pageCss: 'pages/post-new'
   });
 });
 

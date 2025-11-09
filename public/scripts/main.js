@@ -8,13 +8,8 @@ import { initDarkMode }       from './features/darkMode.js';
 import { initRefreshConfirm } from './features/refreshConfirm.js';
 import { initScrollTop }      from './features/scrollTop.js';
 
-// Optional, page-specific bootstrap
-import('./pages/home.js')
-  .then(m => typeof m.init === 'function' && m.init())
-  .catch(() => { /* no home.js, ignore */ });
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Init order: modal first so window.openAuthModal is ready
+  // --- Core features (order matters: modal first) ---
   initModal?.();
   initSearch?.();
   initPrimaryNav?.();
@@ -24,7 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
   initRefreshConfirm?.();
   initScrollTop?.();
 
-  // Deep-link auth via ?auth=login|register and optional ?returnTo=...
+  // --- Page-scoped bootstrap: only load home.js if the home page is present ---
+  const onHome = document.querySelector('[data-page="home"]');
+  if (onHome) {
+    import('./pages/home.js')
+      .then(m => typeof m.init === 'function' && m.init())
+      .catch(() => { /* missing home.js – safe to ignore */ });
+  }
+
+  // --- Deep-link auth handling (?auth=login|register & optional ?returnTo=...) ---
   const params = new URLSearchParams(location.search);
   const mode = params.get('auth');
   const ret  = params.get('returnTo');
@@ -32,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (mode === 'login' || mode === 'register') {
     window.openAuthModal?.(mode);
-    // clean URL (remove both auth and returnTo)
+    // Clean URL (remove both auth and returnTo)
     params.delete('auth');
     params.delete('returnTo');
     const qs = params.toString();
@@ -45,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Remember current page as returnTo whenever an auth opener is clicked
+  // --- Remember current page as returnTo whenever an auth opener is clicked ---
   document.addEventListener('click', (e) => {
     const opener = e.target.closest('[data-open-post]');
     if (!opener) return;

@@ -1,9 +1,66 @@
-<% /* Renders a list of post cards. Expects: posts (array). */ %>
+<% /* views/partials/post-list.ejs — rendered inside [data-feed] in home.ejs */ %>
 
-<% if (Array.isArray(posts) && posts.length) { %>
-  <% posts.forEach(p => { %>
-    <%- include('./post-card.ejs', { p }) %>
+<% if (posts && posts.length) { %>
+  <% posts.forEach(post => { %>
+    <article class="post-card" data-post-id="<%= post.id %>">
+      <header class="post-head">
+        <div class="post-channel">
+          <% if (post.channelIcon) { %>
+            <img src="<%= post.channelIcon %>" alt="" width="20" height="20" loading="lazy" decoding="async">
+          <% } %>
+          <strong><%= post.channelName %></strong>
+          <span class="dot">•</span>
+          <span><%= post.timeAgo %></span>
+        </div>
+        <div class="post-actions">
+          <button class="icon" aria-label="Like"><i class="ico">♥</i></button>
+          <button class="icon" aria-label="Share"><i class="ico">↗</i></button>
+        </div>
+      </header>
+
+      <% if (post.title) { %>
+        <h2 class="post-title"><%= post.title %></h2>
+      <% } %>
+
+      <% if (post.mediaUrl) { %>
+        <div class="post-media">
+          <% if (post.mediaType === 'video') { %>
+            <video controls preload="metadata" width="100%" height="auto">
+              <source src="<%= post.mediaUrl %>" type="video/mp4">
+            </video>
+          <% } else { %>
+            <img
+              src="<%= post.mediaUrl %>"
+              alt="<%= post.title || 'Funny post image' %>"
+              loading="lazy"
+              decoding="async"
+              width="100%"
+              height="auto">
+          <% } %>
+        </div>
+      <% } %>
+
+      <% if (post.tags && post.tags.length) { %>
+        <div class="post-tags">
+          <% post.tags.forEach(tag => { %>
+            <a href="/t/<%= tag.replace(/\s+/g,'-') %>" class="chip chip--small"><%= tag %></a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <footer class="post-foot">
+        <button class="act" aria-label="Like this post">
+          <span class="ico">👍</span> <%= post.likes || 0 %>
+        </button>
+        <button class="act" aria-label="Comment on this post">
+          <span class="ico">💬</span> <%= post.comments || 0 %>
+        </button>
+        <div class="act-spacer"></div>
+        <span><%= post.author || 'FunnyJoke Team' %></span>
+      </footer>
+    </article>
   <% }) %>
 <% } else { %>
-  <p class="feed-empty">No posts yet. Check back soon!</p>
+  <p>No posts available yet. Please check back later!</p>
 <% } %>
+

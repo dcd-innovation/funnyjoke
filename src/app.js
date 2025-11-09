@@ -7,15 +7,16 @@ import expressLayouts from 'express-ejs-layouts';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
-import crypto from 'crypto'; // + nonce support
-
+import crypto from 'crypto';
+import { MongoClient } from 'mongodb';
+import MongoStore from 'connect-mongo';
 import { config } from './config/env.js';
 import { requestLogger } from './utils/loggers.js';
 
 // Passport (singleton)
 import passport from 'passport';
 import { configurePassport } from './config/passport.js';
-import { createUserRepo } from './repositories/userRepo.memory.js';
+import { createUserRepoMongo } from './repositories/userRepo.mongo.js';
 
 // Routes
 import buildAuthRoutes from './routes/auth.routes.js';
@@ -26,24 +27,53 @@ import { createFacebookRouter } from './routes/facebook.routes.js';
 // Errors
 import { errorHandler, notFound as notFoundHandler } from './middleware/errorHandler.js';
 
-// ---- Redis session store (connect-redis v7/v8 + redis v4) ----
-let RedisStore;
-{
-  const mod = await import('connect-redis');
-  RedisStore = mod.RedisStore || mod.default || mod;
-}
-import { createClient as createRedisClient } from 'redis';
 
+/* ---- Redis session store (connect-redis v7/v8 + redis v4) ---- */
+import { createClient as createRedisClient } from 'redis';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
 const app = express();
 
+/* ------------------------------- MongoDB (single connect) ------------------------------- */
+const mongoUri = config.MONGO_URI || process.env.MONGO_URI || '';
+let mongoClient = null;
+
+if (!mongoUri) {
+  console.warn('[mongo] MONGO_URI not set — app will run without a DB (dev fallback).');
+} else {
+  try {
+    // modern driver; Server API v1 for Atlas
+    mongoClient = new MongoClient(mongoUri, { serverApi: { version: '1' } });
+    await mongoClient.connect();
+    app.locals.db = mongoClient.db(); // default DB from URI
+    console.log('[mongo] Connected');
+  } catch (err) {
+    console.error('[mongo] Connection error:', err?.message || err);
+  }
+}
+
+// Guard: ensure DB exists before initializing repos
+if (!app.locals.db) {
+  console.error('[mongo] No DB available — aborting startup to prevent runtime errors.');
+  process.exit(1);
+}
+
+// Create unique indexes (idempotent)
+try {
+  const users = app.locals.db.collection('users');
+  await users.createIndex({ email: 1 },    { unique: true, sparse: true, name: 'uniq_email' });
+  await users.createIndex({ username: 1 }, { unique: true, sparse: true, name: 'uniq_username' });
+  console.log('[mongo] user indexes OK');
+} catch (e) {
+  console.warn('[mongo] index setup skipped:', e?.codeName || e?.message || e);
+}
+
 /* ----------------------------- Core middleware ---------------------------- */
 if (config.isProd) app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
-// Per-request CSP nonce (for inline <script nonce="..."> if any)
+// Per-request CSP nonce
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
   next();
@@ -51,7 +81,7 @@ app.use((req, res, next) => {
 
 app.use(compression());
 
-// Secure headers + CSP (allows FB/Google avatars + Google Fonts + nonce)
+// Secure headers + CSP
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -60,13 +90,9 @@ app.use(
         "default-src": ["'self'"],
         "base-uri": ["'self'"],
         "form-action": ["'self'"],
-        // Allow inline scripts only via per-request nonce
         "script-src": ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
-        // Allow Google Fonts CSS
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        // Some browsers check style-src-elem separately
         "style-src-elem": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        // Fonts from gstatic
         "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
         "img-src": [
           "'self'",
@@ -89,7 +115,7 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(requestLogger());
 
-// Static assets (prod: cache; dev: no-store)
+// Static assets
 app.use(
   express.static(path.join(__dirname, '..', 'public'), {
     etag: true,
@@ -101,30 +127,51 @@ app.use(
   })
 );
 
-/* ----------------------------- Sessions + Passport ------------------------ */
+/* ---------------- Sessions: Redis primary, Mongo fallback ---------------- */
 let store;
 let redisClient; // for graceful shutdown
 
-if (process.env.REDIS_URL) {
-  const useTls = process.env.REDIS_URL.startsWith('rediss://');
-  redisClient = createRedisClient({
-    url: process.env.REDIS_URL,
-    socket: useTls ? { tls: true, rejectUnauthorized: false } : undefined
-  });
+async function buildSessionStore() {
+  // Try Redis first
+  if (process.env.REDIS_URL) {
+    try {
+      const useTls = process.env.REDIS_URL.startsWith('rediss://');
+      const { createClient } = await import('redis');
+      redisClient = createClient({
+        url: process.env.REDIS_URL,
+        socket: useTls ? { tls: true, rejectUnauthorized: false } : undefined
+      });
+      redisClient.on('error', (e) => console.error('[redis] error:', e?.message || e));
+      await redisClient.connect();
 
-  redisClient.on('error', (err) => {
-    console.error('[redis] error:', err?.message || err);
-  });
+      const mod = await import('connect-redis');
+      const RedisStore = mod.RedisStore || mod.default || mod;
+      console.log('[session] Using RedisStore');
+      return new RedisStore({ client: redisClient, prefix: 'sess:' });
+    } catch (e) {
+      console.warn('[session] Redis unavailable, falling back to MongoStore:', e?.message || e);
+    }
+  }
 
-  await redisClient.connect();
+  // Fallback to Mongo (needs Mongo connected)
+  if (app.locals.db) {
+    console.log('[session] Using MongoStore');
+    return MongoStore.create({
+      client: mongoClient,
+      dbName: app.locals.db.databaseName,
+      collectionName: 'sessions',
+      ttl: 60 * 60 * 24 * 7, // 7 days
+      autoRemove: 'interval',
+      autoRemoveInterval: 10 // minutes
+    });
+  }
 
-  store = new RedisStore({
-    client: redisClient,
-    prefix: 'sess:'
-  });
-} else {
-  console.warn('[session] REDIS_URL not set — using MemoryStore (dev only)');
+  // Last resort: Memory (dev only)
+  console.warn('[session] Using MemoryStore (dev only)');
+  return undefined; // express-session defaults to MemoryStore
 }
+
+store = await buildSessionStore();
 
 app.use(session({
   store,
@@ -140,16 +187,12 @@ app.use(session({
   }
 }));
 
-// Configure passport (singleton)
-const userRepo = createUserRepo();
+// Configure passport (singleton) with Mongo repo
+const userRepo = createUserRepoMongo(app.locals.db);
 await configurePassport({ userRepo });
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use((req, res, next) => {
-  console.log('[avatar]', req.user?.avatarUrl || null);
-  next();
-});
 
 /* ------------------------------- View engine ------------------------------ */
 app.use(expressLayouts);
@@ -195,8 +238,8 @@ app.use((req, res, next) => {
     )
   };
 
-  res.locals.title = null;      // legacy key (some routes might set this)
-  res.locals.pageTitle = null;  // your newer key used in some routes
+  res.locals.title = null;
+  res.locals.pageTitle = null;
 
   next();
 });
@@ -226,6 +269,9 @@ app.use(errorHandler);
 function shutdown() {
   if (redisClient) {
     redisClient.quit().catch(() => redisClient.disconnect());
+  }
+  if (mongoClient) {
+    mongoClient.close().catch(() => {});
   }
 }
 process.on('SIGTERM', shutdown);

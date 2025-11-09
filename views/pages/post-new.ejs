@@ -1,5 +1,246 @@
-<section class="container">
-  <h1>Create a Post</h1>
-  <p>Welcome, <%= (user && (user.name || user.email)) || 'friend' %>!</p>
-  <!-- TODO: your post form -->
-</section>
+<% /* views/pages/post-new.ejs — Create Post (FunnyJoke) */ %>
+
+<div class="container post-new" data-page="post-new">
+  <div class="post-new-grid">
+    <!-- =========================
+         Column 1: Composer
+    ========================== -->
+    <form class="composer" action="/api/posts" method="post" enctype="multipart/form-data" novalidate>
+      <!-- Row 1: heading -->
+      <header class="composer-head">
+        <h1>Create a post</h1>
+      </header>
+
+      <!-- Row 2: toggles -->
+      <nav class="post-tabs" role="tablist" aria-label="Post type">
+        <button type="button"
+                class="tab is-active"
+                id="tab-media"
+                role="tab"
+                aria-selected="true"
+                aria-controls="panel-media"
+                tabindex="0">
+          Images & Videos
+        </button>
+        <button type="button"
+                class="tab"
+                id="tab-ask"
+                role="tab"
+                aria-selected="false"
+                aria-controls="panel-ask"
+                tabindex="-1">
+          Ask FunnyJoke
+        </button>
+      </nav>
+
+      <!-- =========================
+           Panel A: Images & Videos
+           (6 rows)
+      ========================== -->
+      <section id="panel-media" class="tab-panel" role="tabpanel" aria-labelledby="tab-media">
+        <!-- 1) Interest -->
+        <div class="form-group">
+          <label class="sr-only" for="interest-media">Choose an interest (optional)</label>
+          <select id="interest-media" name="interest" class="input">
+            <option value="">Choose an interest (optional)</option>
+            <option>Girl NSFW</option>
+            <option>Old Meme</option>
+            <option>Anime NSFW</option>
+            <option>Anime &amp; Manga</option>
+            <option>Latest News</option>
+            <option>Girl</option>
+            <option>Cosplay</option>
+            <option>Politics</option>
+          </select>
+        </div>
+
+        <!-- 2) Title (280) -->
+        <div class="form-group">
+          <label class="sr-only" for="title-media">Title</label>
+          <input id="title-media" name="title" class="input" type="text" placeholder="Title" maxlength="280" required>
+          <small class="char-hint" aria-hidden="true">280</small>
+        </div>
+
+        <!-- 3) Upload card (multi-row) -->
+        <div class="upload-box">
+          <div class="upload-icon" aria-hidden="true">🖼️</div>
+          <span class="upload-lead">Choose a photo or video to upload</span>
+
+          <div class="upload-actions">
+            <button type="button" class="btn meme-btn">🎨 Create a MEME <small>(beta)</small></button>
+
+            <label class="btn file-btn">
+              Choose File...
+              <input type="file" name="media" accept=".png,.jpg,.jpeg,.gif,.mp4" hidden>
+            </label>
+          </div>
+
+          <div class="or-divider">or</div>
+
+          <div class="form-inline">
+            <label class="sr-only" for="media-url">Paste image or video URL</label>
+            <input id="media-url" name="mediaUrl" class="input" type="url" placeholder="Paste image or video URL">
+            <button type="button" class="btn secondary">Use Link</button>
+          </div>
+
+          <p class="note">Support links with PNG, JPG, GIF or MP4 file.</p>
+        </div>
+
+        <!-- 4) Poll settings (4 rows) -->
+        <fieldset class="poll">
+          <!-- row: actions -->
+          <div class="poll-actions">
+            <button type="button" class="btn add-poll">📊 Add a Poll</button>
+            <button type="button" class="btn secondary remove-poll" hidden>Remove Poll</button>
+          </div>
+
+          <!-- row: options -->
+          <div class="poll-options" hidden>
+            <div class="option-row">
+              <input class="input" type="text" name="pollOption[]" placeholder="Option 1">
+            </div>
+            <div class="option-row">
+              <input class="input" type="text" name="pollOption[]" placeholder="Option 2">
+            </div>
+            <button type="button" class="btn secondary add-option">+ Add Option</button>
+          </div>
+
+          <!-- row: duration -->
+          <div class="poll-duration" hidden>
+            <label for="poll-duration" class="label">Poll Duration</label>
+            <select id="poll-duration" name="pollDuration" class="input">
+              <option value="1d">1 day</option>
+              <option value="3d">3 days</option>
+              <option value="7d">7 days</option>
+            </select>
+            <p class="note">At least 2 options are required</p>
+          </div>
+        </fieldset>
+
+        <!-- 5) Tags -->
+        <div class="form-group">
+          <label class="sr-only" for="tags-media">Add tags (optional)</label>
+          <input id="tags-media" name="tags" class="input" type="text" placeholder="Add tags (optional)">
+        </div>
+
+        <!-- 6) Submit -->
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Post</button>
+        </div>
+      </section>
+
+      <!-- =========================
+           Panel B: Ask FunnyJoke
+           (5 rows)
+      ========================== -->
+      <section id="panel-ask" class="tab-panel" role="tabpanel" aria-labelledby="tab-ask" hidden>
+        <!-- 1) Interest -->
+        <div class="form-group">
+          <label class="sr-only" for="interest-ask">Choose an interest (optional)</label>
+          <select id="interest-ask" name="interestAsk" class="input">
+            <option value="">Choose an interest (optional)</option>
+            <option>Girl NSFW</option>
+            <option>Old Meme</option>
+            <option>Anime NSFW</option>
+            <option>Anime &amp; Manga</option>
+            <option>Latest News</option>
+            <option>Girl</option>
+            <option>Cosplay</option>
+            <option>Politics</option>
+          </select>
+        </div>
+
+        <!-- 2) Ask question (280) -->
+        <div class="form-group">
+          <label class="sr-only" for="ask-title">Ask question</label>
+          <input id="ask-title" name="askTitle" class="input" type="text" placeholder="Ask question" maxlength="280" required>
+          <small class="char-hint" aria-hidden="true">280</small>
+        </div>
+
+        <!-- 3) Text (Optional) -->
+        <div class="form-group">
+          <label class="sr-only" for="ask-text">Text (Optional)</label>
+          <textarea id="ask-text" name="askText" class="input" rows="5" placeholder="Text (Optional)"></textarea>
+        </div>
+
+        <!-- 4) Tags -->
+        <div class="form-group">
+          <label class="sr-only" for="tags-ask">Add tags (optional)</label>
+          <input id="tags-ask" name="askTags" class="input" type="text" placeholder="Add tags (optional)">
+        </div>
+
+        <!-- 5) Submit -->
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Post</button>
+        </div>
+      </section>
+    </form>
+
+    <!-- =========================
+         Column 2: Rules sidebar
+    ========================== -->
+    <aside class="rules">
+      <details open>
+        <summary>FunnyJoke Rules</summary>
+        <ol>
+          <li>No explicit or adult content</li>
+          <li>No violent or graphic material</li>
+          <li>No hate, harassment, or bullying</li>
+          <li>No spam or manipulation</li>
+          <li>No deceptive or misleading posts</li>
+          <li>No illegal activity</li>
+          <li>No impersonation</li>
+          <li>Respect copyright and ownership</li>
+        </ol>
+      </details>
+    </aside>
+  </div>
+</div>
+
+<script nonce="<%= cspNonce %>">
+  // Simple tab toggle (no network)
+  (function(){
+    const $ = (s, r=document) => r.querySelector(s);
+    const mediaTab = $('#tab-media');
+    const askTab   = $('#tab-ask');
+    const mediaP   = $('#panel-media');
+    const askP     = $('#panel-ask');
+
+    function activate(which){
+      const onMedia = which === 'media';
+      mediaTab.classList.toggle('is-active', onMedia);
+      askTab.classList.toggle('is-active', !onMedia);
+      mediaTab.setAttribute('aria-selected', onMedia ? 'true' : 'false');
+      askTab.setAttribute('aria-selected', onMedia ? 'false' : 'true');
+      mediaTab.setAttribute('tabindex', onMedia ? '0' : '-1');
+      askTab.setAttribute('tabindex', onMedia ? '-1' : '0');
+      mediaP.hidden = !onMedia;
+      askP.hidden = onMedia;
+      (onMedia ? mediaTab : askTab).focus();
+    }
+
+    mediaTab?.addEventListener('click', () => activate('media'));
+    askTab?.addEventListener('click', () => activate('ask'));
+
+    // Poll UI toggles
+    const addBtn = document.querySelector('.poll .add-poll');
+    const remBtn = document.querySelector('.poll .remove-poll');
+    const opts   = document.querySelector('.poll .poll-options');
+    const dur    = document.querySelector('.poll .poll-duration');
+    const addOpt = document.querySelector('.poll .add-option');
+
+    addBtn?.addEventListener('click', () => {
+      opts.hidden = false; dur.hidden = false; remBtn.hidden = false; addBtn.hidden = true;
+    });
+    remBtn?.addEventListener('click', () => {
+      opts.hidden = true; dur.hidden = true; remBtn.hidden = true; addBtn.hidden = false;
+      opts.querySelectorAll('input').forEach((i, idx) => { if (idx > 1) i.parentElement.remove(); i.value=''; });
+    });
+    addOpt?.addEventListener('click', () => {
+      const wrap = document.createElement('div');
+      wrap.className = 'option-row';
+      wrap.innerHTML = '<input class="input" type="text" name="pollOption[]" placeholder="Another option">';
+      opts.appendChild(wrap);
+    });
+  })();
+</script>
